@@ -1,0 +1,2575 @@
+          KORG Z1 MIDI Implementation          Revision 1.0 (1997.9.12)
+
+1.TRANSMITTED DATA
+
+1-1 CHANNEL MESSAGES            [H]:Hex, [D]:Decimal
++--------+---------+-------------+--------------------------------------+
+| Status | Second |    Third     |           Description                |
+| [Hex] | [H] [D] | [H]     [D] |                                       |
++--------+---------+-------------+--------------------------------------+
+|   8n   | kk (kk) | vv    (vv) | Note Off     vv=0~127                 |
+|   9n   | kk (kk) | 00    (00) | Note Off                              |
+|   9n   | kk (kk) | vv    (vv) | Note On      vv=1~127                 |
+|   Bn   | 00 (00) | mm    (mm) | Program Bank Select(MSB)              |
+|   Bn   | 01 (01) | vv    (vv) | Pitch Modulation Depth                |
+|   Bn   | 02 (02) | vv    (vv) | Breath Control Depth                  |
+|   Bn   | 04 (04) | vv    (vv) | Foot Control                          |
+|   Bn   | 05 (05) | vv    (vv) | Portamento Time                       |
+|   Bn   | 06 (06) | vv    (vv) | Data Entry(MSB)                   [*1]|
+|   Bn   | 07 (07) | vv    (vv) | Volume                                |
+|   Bn   | 09 (09) | vv    (vv) | Arpeggio Resolution                   |
+|   Bn   | 0A (10) | vv    (vv) | Panpot                                |
+|   Bn   | 0B (11) | vv    (vv) | Expression                            |
+|   Bn   | 0E (14) | vv    (vv) | Arpeggio Gate                         |
+|   Bn   | 0F (15) | vv    (vv) | Arpeggio Velocity                     |
+|   Bn   | 10 (16) | vv    (vv) | X-Y Pad (X)                           |
+|   Bn   | 11 (17) | vv    (vv) | X-Y Pad (Y)                           |
+|   Bn   | 12 (18) | vv    (vv) | Mono SW                               |
+|   Bn   | 13 (19) | vv    (vv) | Knob1                                 |
+|   Bn   | 14 (20) | vv    (vv) | Knob2                                 |
+|   Bn   | 15 (21) | vv    (vv) | Knob3                                 |
+|   Bn   | 16 (22) | vv    (vv) | Knob4                                 |
+|   Bn   | 17 (23) | vv    (vv) | Knob5                                 |
+|   Bn   | 18 (24) | vv    (vv) | Filter1 Attack                        |
+|   Bn   | 19 (25) | vv    (vv) | Filter1 Decay                         |
+|   Bn   | 1A (26) | vv    (vv) | Filter1 Sustain                       |
+|   Bn   | 1B (27) | vv    (vv) | Filter1 Release                       |
+|   Bn   | 1C (28) | vv    (vv) | Filter2 Attack                        |
+|   Bn   | 1D (29) | vv    (vv) | Filter2 Decay                         |
+|   Bn   | 1E (30) | vv    (vv) | Filter2 Sustain                       |
+|   Bn   | 1F (31) | vv    (vv) | Filter2 Release                       |
+|   Bn   | 20 (32) | bb    (bb) | Program Bank Select(LSB)              |
+|   Bn   | 40 (64) |00/7F (0/127)| Sustain Off/On                       |
+|   Bn   | 41 (65) |00/7F (0/127)| Portamento Off/On                    |
+|   Bn   | 42 (66) |00/7F (0/127)| Sostenuto Off/On                     |
+|   Bn   | 4B (75) | vv    (vv) | Unison SW                             |
+|   Bn   | 4C (76) | vv    (vv) | Amp Attack                            |
+|   Bn   | 4D (77) | vv    (vv) | Amp Decay                             |
+|   Bn   | 4E (78) | vv    (vv) | Amp Sustain                           |
+|   Bn   | 4F (79) | vv    (vv) | Amp Release                           |
+|   Bn   | 50 (80) |00/7F (0/127)| SW1 Off/On                           |
+|   Bn   | 51 (81) |00/7F (0/127)| SW2 Off/On                           |
+|   Bn   | 52 (82) |00/7F (0/127)| FootSW Off/On                        |
+|   Bn   | 53 (83) | vv    (vv) | MixerSW                           [*2]|
+|   Bn   | 55 (85) | vv    (vv) | Filter1 Cutoff                        |
+|   Bn   | 56 (86) | vv    (vv) | Filter1 Resonance                     |
+|   Bn   | 57 (87) | vv    (vv) | Filter1 EG Int.                       |
+|   Bn   | 58 (88) | vv    (vv) | Filter2 Cutoff                        |
+|   Bn   | 59 (89) | vv    (vv) | Filter2 Resonance                     |
+|   Bn   | 5A (90) | vv    (vv) | Filter2 EG Int.                       |
+|   Bn   | 5B (91) | vv    (vv) | Effect Send                           |
+|   Bn   | 5C (92) |00/7F (0/127)| MasterFx Off/On                      |
+|   Bn   | 5E (94) |00/7F (0/127)| Effect1 Off/On                       |
+|   Bn   | 5F (95) |00/7F (0/127)| Effect2 Off/On                       |
+|   Bn   | 62 (98) | vv    (vv) | NRPN LSB                          [*1]|
+|   Bn   | 63 (99) | vv    (vv) | NRPN MSB                          [*1]|
+|   Bn   | cc (cc) | vv    (vv) | Control Change cc=00~95               |
+|   Cn   | pp (pp) | --     --   | Program Change                       |
+|   Dn   | vv (vv) | --     --   | Channel Pressure (After Touch)       |
+|   En   | bb (bb) | bb    (bb) | Pitch Bender Change                   |
++--------+---------+-------------+--------------------------------------+
+
+n : MIDI Channel (0~15)
+vv: Value
+
+[*1]:Non Registered Parameter Number
++---------+-----------------------------+---------------------------------+
+| MSB LSB |       Parameter             |     Data Entry(MSB) Value       |
+| [H] [H] |                             |                                 |
++---------+-----------------------------+---------------------------------+
+| 00 01 | Arpeggio Pattern Select       | 00~13:Int.Pat, 20h~33h:Card Pat |
+| 00 02 | Arpeggio On/Off               | 00:OFF, 7Fh:ON                  |
+| 00 03 | Arpeggio Octaves              | 00~03:1~4 Oct.                  |
+| 00 04 | Arpeggiator Latch On/Off      | 00:OFF, 7Fh:ON                  |
+| 00 05 | Arpeggiator Key Sync On/Off | 00:OFF, 7Fh:ON                    |
+| 00 06 | Arpeggio KBD On/Off           | 00:OFF, 7Fh:ON                  |
++---------+-----------------------------+---------------------------------+
+
+[*2]:MixerSW
++-----------+---------------------------+
+|    vv     | Description               |
++-----------+---------------------------+
+| 0--- x--- | OSC1 SW                   |
+| 0--x ---- | OSC2 SW                   |
+| 0-x- ---- | Sub OSC SW                |
+| 0x-- ---- | Noise Generator SW        |
++-----------+---------------------------+
+
+
+1-2 SYSTEM REALTIME MESSAGES
++-----------+-----------------------------------------------+
+| Status[H] | Description                                   |
++-----------+-----------------------------------------------+
+|    F8     | Timing Clock                              [*1]|
+|    FE     | Active Sensing                                |
++-----------+-----------------------------------------------+
+
+[*1]:This message is transmitted when the "Clock Source" is
+     set to "INTERNAL".
+
+
+1-3 UNIVERSAL SYSTEM EXCLUSIVE MESSAGES
+
+    DEVICE INQUIRY REPLY
++---------+-----------------------------------------------+
+| Byte[H] |                Description                    |
++---------+-----------------------------------------------+
+|   F0    | Exclusive Status                              |
+|   7E    | Non Realtime Message                          |
+|   0g    | MIDI GLOBAL CHANNEL ( Device ID )             |
+|   06    | INQUIRY MESSAGE                               |
+|   02    | IDENTITY REPLY                                |
+|   42    | KORG ID              ( Manufacturers ID )     |
+|   46    | Z1 Series ID         ( Family ID   (LSB))     |
+|   00    |                      ( Family ID   (MSB))     |
+|   01    |                      ( Member ID   (LSB))     |
+|   00    |                      ( Member ID   (MSB))     |
+|   xx    |                      ( Minor Ver. (LSB))      |
+|   xx    |                      ( Minor Ver. (MSB))      |
+|   xx    |                      ( Major Ver. (LSB))      |
+|   xx    |                      ( Major Ver. (MSB))      |
+|   F7    | END OF EXCLUSIVE                              |
++---------+-----------------------------------------------+
+
+ This message is transmitted whenever a INQUIRY MESSAGE REQUEST
+ is received.
+
+
+1-4 SYSTEM EXCLUSIVE MESSAGES
++-------------+--------------------------------------------------+
+| Function ID |                                                  |
+|    [Hex]    |                                                  |
++-------------+--------------------------------------------------+
+|     40      | CURRENT PROGRAM DATA DUMP                    [*1]|
+|     4C      | PROGRAM DATA DUMP                                |
+|     49      | CURRENT MULTI SETUP DATA DUMP                [*1]|
+|     4D      | MULTI SETUP DATA DUMP                            |
+|     6B      | CURRENT ARPEGGIO PATTERN DATA DUMP               |
+|     69      | ARPEGGIO PATTERN DATA DUMP                       |
+|     51      | GLOBAL/MIDI DATA DUMP                            |
+|     50      | ALL DATA(PROGRAM,MULTI,PATTERN,GLOBAL,MIDI) DUMP |
+|     41      | PARAMETER CHANGE                             [*2]|
+|     26      | DATA FORMAT ERROR                                |
+|     23      | DATA LOAD COMPLETED                              |
+|     24      | DATA LOAD ERROR                                  |
+|     21      | WRITE COMPLETED                                  |
+|     22      | WRITE ERROR                                      |
++-------------+--------------------------------------------------+
+
+[*1]:When the "SysEx Transmit" parameter is set to "ON", the message is
+     transmitted whenever a Program Change occurs.
+[*2]:When the "SysEx Transmit" parameter is set to "ON", the message is
+     transmitted whenever a parameter is changed.
+2.RECOGNIZED RECEIVE DATA
+
+2-1 CHANNEL MESSAGES
++--------+---------+-------------+--------------------------------------+
+| Status | Second |    Third     |           Description                |
+| [Hex] | [H] [D] | [H]    [D]   |                                      |
++--------+---------+-------------+--------------------------------------+
+|   8n   | kk (kk) | vv    (vv) | Note Off     vv=0~127                 |
+|   9n   | kk (kk) | 00    (00) | Note Off                              |
+|   9n   | kk (kk) | vv    (vv) | Note On      vv=1~127                 |
+|   Bn   | 00 (00) | mm    (mm) | Program Bank Select(MSB)              |
+|   Bn   | 01 (01) | vv    (vv) | Pitch Modulation Depth                |
+|   Bn   | 02 (02) | vv    (vv) | Breath Control Depth                  |
+|   Bn   | 04 (04) | vv    (vv) | Foot Control                          |
+|   Bn   | 05 (05) | vv    (vv) | Portamento Time                       |
+|   Bn   | 06 (06) | vv    (vv) | Data Entry(MSB)                   [*1]|
+|   Bn   | 07 (07) | vv    (vv) | Volume                                |
+|   Bn   | 09 (09) | vv    (vv) | Arpeggio Resolution                   |
+|   Bn   | 0A (10) | vv    (vv) | Panpot                                |
+|   Bn   | 0B (11) | vv    (vv) | Expression                            |
+|   Bn   | 0E (14) | vv    (vv) | Arpeggio Gate                         |
+|   Bn   | 0F (15) | vv    (vv) | Arpeggio Velocity                     |
+|   Bn   | 10 (16) | vv    (vv) | X-Y Pad (X)                           |
+|   Bn   | 11 (17) | vv    (vv) | X-Y Pad (Y)                           |
+|   Bn   | 13 (18) | vv    (vv) | Mono SW                               |
+|   Bn   | 13 (19) | vv    (vv) | Knob1                                 |
+|   Bn   | 14 (20) | vv    (vv) | Knob2                                 |
+|   Bn   | 15 (21) | vv    (vv) | Knob3                                 |
+|   Bn   | 16 (22) | vv    (vv) | Knob4                                 |
+|   Bn   | 17 (23) | vv    (vv) | Knob5                                 |
+|   Bn   | 18 (24) | vv    (vv) | Filter1 Attack                        |
+|   Bn   | 19 (25) | vv    (vv) | Filter1 Decay                         |
+|   Bn   | 1A (26) | vv    (vv) | Filter1 Sustain                       |
+|   Bn   | 1B (27) | vv    (vv) | Filter1 Release                       |
+|   Bn   | 1C (28) | vv    (vv) | Filter2 Attack                        |
+|   Bn   | 1D (29) | vv    (vv) | Filter2 Decay                         |
+|   Bn   | 1E (30) | vv    (vv) | Filter2 Sustain                       |
+|   Bn   | 1F (31) | vv    (vv) | Filter2 Release                       |
+|   Bn   | 20 (32) | bb    (bb) | Program Bank Select(LSB)              |
+|   Bn   | 40 (64) | vv    (vv) | Sustain Off/On                        |
+|   Bn   | 41 (65) | vv    (vv) | Portamento Off/On                     |
+|   Bn   | 42 (66) | vv    (vv) | Sostenuto Off/On                      |
+|   Bn   | 4C (75) | vv    (vv) | Unison SW                             |
+|   Bn   | 4C (76) | vv    (vv) | Amp Attack                            |
+|   Bn   | 4D (77) | vv    (vv) | Amp Decay                             |
+|   Bn   | 4E (78) | vv    (vv) | Amp Sustain                           |
+|   Bn   | 4F (79) | vv    (vv) | Amp Release                           |
+|   Bn   | 50 (80) | vv    (vv) | SW1 Off/On                            |
+|   Bn   | 51 (81) | vv    (vv) | SW2 Off/On                            |
+|   Bn   | 52 (82) | vv    (vv) | FootSW Off/On                         |
+|   Bn   | 53 (83) | vv    (vv) | MixerSW                           [*2]|
+|   Bn   | 55 (85) | vv    (vv) | Filter1 Cutoff                        |
+|   Bn   | 56 (86) | vv    (vv) | Filter1 Resonance                     |
+|   Bn   | 57 (87) | vv    (vv) | Filter1 EG Int.                       |
+|   Bn   | 58 (88) | vv    (vv) | Filter2 Cutoff                        |
+|   Bn   | 59 (89) | vv    (vv) | Filter2 Resonance                     |
+|   Bn   | 5A (90) | vv    (vv) | Filter2 EG Int.                       |
+|   Bn   | 5B (91) | vv    (vv) | Effect Send                           |
+|   Bn   | 5C (92) | vv    (vv) | MasterFx Off/On                       |
+|   Bn   | 5E (94) | vv    (vv) | Effect1 Off/On                        |
+|   Bn   | 5F (95) | vv    (vv) | Effect2 Off/On                        |
+|   Bn   | 60 (96) | xx    (xx) | Data Increment                    [*1]|
+|   Bn   | 61 (97) | xx    (xx) | Data Decrement                    [*1]|
+|   Bn   | 62 (98) | nl    (nl) | NRPN LSB                          [*1]|
+|   Bn   | 63 (99) | nm    (nm) | NRPN MSB                          [*1]|
+|   Bn   | 78(120) | 00    (0)   | All Sound Off                        |
+|   Bn   | 79(121) | 00    (0)   | Reset All Controller                 |
+|   Bn   | 7A(122) |00/7F (0/127)| Local Control Off/On                 |
+|   Bn   | 7B(123) | 00    (0)   | All Note Off                         |
+|   Bn   | 7C(124) | 00    (0)   | Omni Mode Off                        |
+|   Bn   | 7D(125) | 00    (0)   | Omni Mode On                         |
+|   Bn   | cc (cc) | vv    (vv) | Control Data cc=00~101                |
+|   Cn   | pp (pp) | --     --   | Program Change                       |
+|   Dn   | vv (vv) | --     --   | Channel Pressure (After Touch)       |
+|   En   | bb (bb) | bb    (bb) | Pitch Bender Change                   |
++--------+---------+-------------+--------------------------------------+
+
+n : MIDI Channel No.(0~15)
+vv: Value
+
+[*1]:Non Registered Parameter Number
++---------+-----------------------------+---------------------------------+
+| MSB LSB |       Parameter             |     Data Entry(MSB) Value       |
+| [H] [H] |                             |                                 |
++---------+-----------------------------+---------------------------------+
+| 00 01 | Arpeggio Pattern Select       | 00~13:Int.Pat, 20h~33h:Card Pat |
+| 00 02 | Arpeggio On/Off               | 00~3F:OFF, 40h~7Fh:ON           |
+| 00 03 | Arpeggio Octaves              | 00~03:1~4 Oct.                  |
+| 00 04 | Arpeggiator Latch On/Off      | 00~3F:OFF, 40h~7Fh:ON           |
+| 00 05 | Arpeggiator Key Sync On/Off | 00~3F:OFF, 40h~7Fh:ON             |
+| 00 06 | Arpeggio KBD On/Off           | 00~3F:OFF, 40h~7Fh:ON           |
++---------+-----------------------------+---------------------------------+
+
+ All these parameters can be changed by "Data Increment" and "Data Decrement".
+
+[*2]:MixerSW
++-----------+---------------------------+
+|    vv     | Description               |
++-----------+---------------------------+
+| 0--- x--- | OSC1 SW                   |
+| 0--x ---- | OSC2 SW                   |
+| 0-x- ---- | Sub OSC SW                |
+| 0x-- ---- | Noise Generator SW        |
++-----------+---------------------------+
+
+
+2-2 SYSTEM REALTIME MESSAGES
++-----------+-----------------------------------------------+
+| Status[H] | Description                                   |
++-----------+-----------------------------------------------+
+|    F8     | Timing Clock                              [*1]|
+|    FA     | Start                                     [*2]|
+|    FB     | Continue                                  [*2]|
+|    FC     | Stop                                      [*2]|
+|    FE     | Active Sensing                                |
++-----------+-----------------------------------------------+
+
+[*1]:This message is recognized when the "Clock Source" is
+     set to "EXTERNAL".
+
+[*2]:These messages are recognized when the "Clock Source" is
+     set to "EXTERNAL" and the "Realtime Command" is set to
+     "ENABLE".
+
+
+2-3 UNIVERSAL SYSTEM EXCLUSIVE MESSAGE ( NON REALTIME )
+
+  DEVICE INQUIRY MESSAGE REQUEST
++---------+----------------------+
+| Byte[H] |    Description       |
++---------+----------------------+
+|   F0    | Exclusive Status     |
+|   7E    | Non Realtime Message |
+|   0g    | MIDI Channel         |
+|   06    | Inquiry Message      |
+|   01    | Inquiry Request      |
+|   F7    | END OF EXCLUSIVE     |
++---------+----------------------+
+
+
+2-4 SYSTEM EXCLUSIVE MESSAGE
++-------------+-----------------------------------------------------------+
+| Function ID |               Function                                    |
+|    [Hex]    |                                                           |
++-------------+-----------------------------------------------------------+
+|     10      | CURRENT PROGRAM DATA DUMP REQUEST                         |
+|     1C      | PROGRAM DATA DUMP REQUEST                                 |
+|     19      | CURRENT MULTI SETUP DATA DUMP REQUEST                     |
+|     1D      | MULTI SETUP DATA DUMP REQUEST                             |
+|     36      | CURRENT ARPEGGIO PATTERN DATA DUMP REQUEST                |
+|     34      | ARPEGGIO PATTERN DATA DUMP REQUEST                        |
+|     0E      | GLOBAL/MIDI DATA DUMP REQUEST                             |
+|     0F      | ALL DATA(PROGRAM,MULTI,PATTERN,GLOBAL,MIDI) DUMP REQUEST |
+|     11      | PROGRAM WRITE REQUEST                                     |
+|     1A      | MULTI SETUP WRITE REQUEST                                 |
+|     37      | ARPEGGIO PATTERN WRITE REQUEST                            |
+|     40      | CURRENT PROGRAM DATA DUMP                                 |
+|     4C      | PROGRAM DATA DUMP                                         |
+|     49      | CURRENT MULTI SETUP DATA DUMP                             |
+|     4D      | MULTI SETUP DATA DUMP                                     |
+|     6B      | CURRENT ARPEGGIO PATTERN DATA DUMP                        |
+|     69      | ARPEGGIO PATTERN DATA DUMP                                |
+|     51      | GLOBAL/MIDI DATA DUMP                                     |
+|     50      | ALL DATA(PROGRAM,MULTI,PATTERN,GLOBAL,MIDI) DUMP          |
+|     41      | PARAMETER CHANGE                                          |
++-------------+-----------------------------------------------------------+
+
+  When the "SysEx Receive" parameter is set to "ENABLE", these messages are
+  recognized.
+
+MIDI EXCLUSIVE FORMAT   (R:Receive, T:Transmit)
+
+(1) CURRENT PROGRAM DATA DUMP REQUEST                              R
++----------------+--------------------------------------------------+
+|     Byte       |             Description                          |
++----------------+--------------------------------------------------+
+| F0,42,3g,46    | EXCLUSIVE HEADER                                 |
+| 0001 0000 (10) | CURRENT PROGRAM DATA DUMP REQUEST      10H       |
+| 0000 0000 (00) |                                                  |
+| 1111 0111 (F7) | EOX                                              |
++----------------+--------------------------------------------------+
+
+When this message is received, the CURRENT PROGRAM DUMP(Function:40h)
+message will be transmitted.
+
+
+(2) PROGRAM DATA DUMP REQUEST                                      R
++----------------+--------------------------------------------------+
+|     Byte       |             Description                          |
++----------------+--------------------------------------------------+
+| F0,42,3g,46    | EXCLUSIVE HEADER                                 |
+| 0001 1100 (1C) | PROGRAM DATA DUMP REQUEST              1CH       |
+| 00uu 000b (ub) | Unit(00:Prog/01:Bank/10:All),Bank(0:A/1:B)       |
+| 0ppp pppp (pp) | Prog No.(Ignored when Bank or All dump.)         |
+| 0000 0000 (00) |                                                  |
+| 1111 0111 (F7) | EOX                                              |
++----------------+--------------------------------------------------+
+
+When this message is received, the PROGRAM DUMP(Function:4Ch) message
+will be transmitted.
+
+
+(3) CURRENT MULTI SETUP DATA DUMP REQUEST                          R
++----------------+--------------------------------------------------+
+|     Byte       |             Description                          |
++----------------+--------------------------------------------------+
+| F0,42,3g,46    | EXCLUSIVE HEADER                                 |
+| 0001 1001 (19) | CURRENT MULTI SETUP DATA DUMP REQUEST 19H        |
+| 0000 0000 (00) |                                                  |
+| 1111 0111 (F7) | EOX                                              |
++----------------+--------------------------------------------------+
+
+When this message is received, the CURRENT MULTI SETUP DATA DUMP
+(Function:49h) message will be transmitted.
+(4) MULTI SETUP DATA DUMP REQUEST                                  R
++----------------+--------------------------------------------------+
+|     Byte       |             Description                          |
++----------------+--------------------------------------------------+
+| F0,42,3g,46    | EXCLUSIVE HEADER                                 |
+| 0001 1101 (1D) | MULTI SETUP DATA DUMP REQUEST          1DH       |
+| 00uu 000b (ub) | Unit(00:Multi/01:Bank/10:All),Bank(0:A/1:B)      |
+| 0mmm mmmm (mm) | Multi Setup No.(Ignored when Bank or All dump.) |
+| 0000 0000 (00) |                                                  |
+| 1111 0111 (F7) | EOX                                              |
++----------------+--------------------------------------------------+
+
+When this message is received, the MULTI SETUP DATA DUMP(Function:4Dh)
+message will be transmitted.
+
+
+(5) CURRENT ARPEGGIO PATTERN DUMP REQUEST                          R
++----------------+--------------------------------------------------+
+|     Byte       |             Description                          |
++----------------+--------------------------------------------------+
+| F0,42,3g,46    | EXCLUSIVE HEADER                                 |
+| 0011 0110 (36) | CURRENT ARPEGGIO PATTERN DUMP REQUEST 36H        |
+| 0000 0000 (00) |                                                  |
+| 1111 0111 (F7) | EOX                                              |
++----------------+--------------------------------------------------+
+
+When this message is received, the CURRENT ARPEGGIO PATTERN DUMP
+(Function:6Bh) message will be transmitted.
+
+
+(6) ARPEGGIO PATTERN DATA DUMP REQUEST                             R
++----------------+--------------------------------------------------+
+|     Byte       |             Description                          |
++----------------+--------------------------------------------------+
+| F0,42,3g,46    | EXCLUSIVE HEADER                                 |
+| 0011 0100 (34) | ARPEGGIO PATTERN DATA DUMP REQUEST     34H       |
+| 000u 0000 (u0) | Unit(0:Pattern/1:All)                            |
+| 0ppp pppp (pp) | Pattern No.(0~19)                                |
+| 1111 0111 (F7) | EOX                                              |
++----------------+--------------------------------------------------+
+
+When this message is received, the ARPEGGIO PATTERN DUMP(Function:69h)
+message will be transmitted.
+
+
+(7) GLOBAL/MIDI DATA DUMP REQUEST                                  R
++----------------+--------------------------------------------------+
+|     Byte       |             Description                          |
++----------------+--------------------------------------------------+
+| F0,42,3g,46    | EXCLUSIVE HEADER                                 |
+| 0000 1110 (0E) | GLOBAL/MIDI DATA DUMP REQUEST          0EH       |
+| 0000 000g (0g) | 0:Global/1:MIDI                                  |
+| 1111 0111 (F7) | EOX                                              |
++----------------+--------------------------------------------------+
+
+When this message is received, the GLOBALS DATA DUMP(Function:51h)
+message will be transmitted.
+
+
+(8) ALL DATA DUMP REQUEST                                          R
++----------------+--------------------------------------------------+
+|     Byte       |             Description                          |
++----------------+--------------------------------------------------+
+| F0,42,3g,46    | EXCLUSIVE HEADER                                 |
+| 0000 1111 (0F) | ALL DATA DUMP REQ                      0FH       |
+| 0000 0000 (00) |                                                  |
+| 1111 0111 (F7) | EOX                                              |
++----------------+--------------------------------------------------+
+
+When this message is received, the ALL DATA DUMP(Function:50h) message
+will be transmitted.
+
+
+(9) PROGRAM WRITE REQUEST                                          R
++----------------+--------------------------------------------------+
+|     Byte       |            Description                           |
++----------------+--------------------------------------------------+
+| F0,42,3g,46    | EXCLUSIVE HEADER                                 |
+| 0001 0001 (11) | PROGRAM WRITE REQUEST                  11H       |
+| 0000 000b (0b) | Destination Program Bank(0:A/1:B)                |
+| 0ppp pppp (pp) | Destination Program No.(0~127)                   |
+| 1111 0111 (F7) | EOX                                              |
++----------------+--------------------------------------------------+
+When this message is received, a WRITE COMPLETED(Function:21h) message
+or a WRITE ERROR(Function:22h) message will be transmitted.
+
+
+(10) MULTI SETUP WRITE REQUEST                                     R
++----------------+--------------------------------------------------+
+|     Byte       |            Description                           |
++----------------+--------------------------------------------------+
+| F0,42,3g,46    | EXCLUSIVE HEADER                                 |
+| 0001 1010 (1A) | MULTI SETUP WRITE REQUEST              1AH       |
+| 0000 0000 (00) |                                                  |
+| 000m mmmm (mm) | Destination Multi No.(0~31)                      |
+| 1111 0111 (F7) | EOX                                              |
++----------------+--------------------------------------------------+
+
+When this message is received, a WRITE COMPLETED(Function:21h) message
+or a WRITE ERROR(Function:22h) message will be transmitted.
+
+
+(11) ARPEGGIO PATTERN WRITE REQUEST                                R
++----------------+--------------------------------------------------+
+|     Byte       |            Description                           |
++----------------+--------------------------------------------------+
+| F0,42,3g,46    | EXCLUSIVE HEADER                                 |
+| 0011 0111 (37) | ARPEGGIO PATTERN WRITE REQUEST         37H       |
+| 0000 0000 (00) |                                                  |
+| 0ppp pppp (pp) | Destination Pattern No.(0~19)                    |
+| 1111 0111 (F7) | EOX                                              |
++----------------+--------------------------------------------------+
+
+When this message is received, a WRITE COMPLETED(Function:21h) message
+or a WRITE ERROR(Function:22h) message will be transmitted.
+
+
+(12) CURRENT PROGRAM DATA DUMP                                   R/T
++----------------+--------------------------------------------------+
+|     Byte       |             Description                          |
++----------------+--------------------------------------------------+
+| F0,42,3g,46    | EXCLUSIVE HEADER                                 |
+| 0100 0000 (40) | CURRENT PROGRAM DATA DUMP              40H       |
+| 0000 0001 (01) |                                                  |
+| 0ddd dddd (dd) | Data                                         [*1]|
+|     :          | :                                                |
+| 1111 0111 (F7) | EOX                                              |
++----------------+--------------------------------------------------+
+
+When this message is received, a DATA LOAD COMPLETED(Function:23h)
+message or a DATA LOAD ERROR(Function:24h) message will be transmitted.
+
+
+(13) PROGRAM DATA DUMP                                           R/T
++----------------+--------------------------------------------------+
+|     Byte       |             Description                          |
++----------------+--------------------------------------------------+
+| F0,42,3g,46    | EXCLUSIVE HEADER                                 |
+| 0100 1100 (4C) | PROGRAM DATA DUMP                      4CH       |
+| 00uu 000b (ub) | Unit(00:Prog/01:Bank/10:All),Bank(0:A/1:B)       |
+| 0ppp pppp (pp) | Program No.(Ignored when Bank or All dump.)      |
+| 0000 0000 (00) |                                                  |
+| 0ddd dddd (dd) | Data                                         [*1]|
+|     :          | :                                                |
+| 1111 0111 (F7) | EOX                                              |
++----------------+--------------------------------------------------+
+
+When this message is received, a DATA LOAD COMPLETED(Function:23h)
+message or a DATA LOAD ERROR(Function:24h) message will be transmitted.
+
+
+(14) CURRENT MULTI SETUP DATA DUMP                               R/T
++----------------+--------------------------------------------------+
+|     Byte       |             Description                          |
++----------------+--------------------------------------------------+
+| F0,42,3g,46    | EXCLUSIVE HEADER                                 |
+| 0100 1001 (49) | CURRENT MULTI SETUP DATA DUMP          49H       |
+| 0000 0000 (00) |                                                  |
+| 0ddd dddd (dd) | Data                                         [*1]|
+|     :          | :                                                |
+| 1111 0111 (F7) | EOX                                              |
++----------------+--------------------------------------------------+
+
+When this message is received, a DATA LOAD COMPLETED(Function:23h)
+message or a DATA LOAD ERROR(Function:24h) message will be transmitted.
+(15) MULTI SETUP DATA DUMP                                       R/T
++----------------+--------------------------------------------------+
+|     Byte       |             Description                          |
++----------------+--------------------------------------------------+
+| F0,42,3g,46    | EXCLUSIVE HEADER                                 |
+| 0100 1101 (4D) | MULTI SETUP DATA DUMP                  4DH       |
+| 0000 0000 (00) |                                                  |
+| 00uu 000b (ub) | Unit(00:Multi/01:Bank/10:All),Bank(0:A/1:B)      |
+| 000m mmmm (mm) | Multi Setup No.(Ignored when Bank or All dump.) |
+| 0000 0000 (00) |                                                  |
+| 0ddd dddd (dd) | Data                                         [*1]|
+|     :          | :                                                |
+| 1111 0111 (F7) | EOX                                              |
++----------------+--------------------------------------------------+
+
+When this message is received, a DATA LOAD COMPLETED(Function:23h)
+message or a DATA LOAD ERROR(Function:24h) message will be transmitted.
+
+
+(16) CURRENT ARPEGGIO PATTERN DUMP                               R/T
++----------------+--------------------------------------------------+
+|     Byte       |             Description                          |
++----------------+--------------------------------------------------+
+| F0,42,3g,46    | EXCLUSIVE HEADER                                 |
+| 0110 1011 (6B) | CURRENT ARPEGGIO PATTERN DUMP          6BH       |
+| 0000 0000 (00) |                                                  |
+| 0ddd dddd (dd) | Data                                         [*1]|
+|     :          | :                                                |
+| 1111 0111 (F7) | EOX                                              |
++----------------+--------------------------------------------------+
+
+When this message is received, a DATA LOAD COMPLETED(Function:23h)
+message or a DATA LOAD ERROR(Function:24h) message will be transmitted.
+
+
+(17) ARPEGGIO PATTERN DATA DUMP                                  R/T
++----------------+--------------------------------------------------+
+|     Byte       |             Description                          |
++----------------+--------------------------------------------------+
+| F0,42,3g,46    | EXCLUSIVE HEADER                                 |
+| 0110 1001 (69) | ARPEGGIO PATTERN DATA DUMP             69H       |
+| 000u 0000 (u0) | Unit(0:Pattern/1:All)                            |
+| 0ppp pppp (pp) | Pattern No.(0~19)                                |
+| 0ddd dddd (dd) | Data                                         [*1]|
+|     :          | :                                                |
+| 1111 0111 (F7) | EOX                                              |
++----------------+--------------------------------------------------+
+
+When this message is received, a DATA LOAD COMPLETED(Function:23h)
+message or a DATA LOAD ERROR(Function:24h) message will be transmitted.
+
+
+(18) GLOBAL/MIDI DATA DUMP                                       R/T
++----------------+--------------------------------------------------+
+|     Byte       |             Description                          |
++----------------+--------------------------------------------------+
+| F0,42,3g,46    | EXCLUSIVE HEADER                                 |
+| 0101 0001 (51) | GLOBAL/MIDI DATA DUMP                  51H       |
+| 0000 000g (0g) | 0:Global/1:MIDI                                  |
+| 0ddd dddd (dd) | Data                                         [*1]|
+|     :          | :                                                |
+| 1111 0111 (F7) | EOX                                              |
++----------------+--------------------------------------------------+
+
+When this message is received, a DATA LOAD COMPLETED(Function:23h)
+message or a DATA LOAD ERROR(Function:24h) message will be transmitted.
+
+
+(19) ALL DATA DUMP                                               R/T
++----------------+--------------------------------------------------+
+|     Byte       |             Description                          |
++----------------+--------------------------------------------------+
+| F0,42,3g,46    | EXCLUSIVE HEADER                                 |
+| 0101 0000 (50) | ALL DATA DUMP                          50H       |
+| 0000 0000 (00) |                                                  |
+| 0000 0000 (00) |                                                  |
+| 0ddd dddd (dd) | Data                                         [*1]|
+|     :          | :                                                |
+| 1111 0111 (F7) | EOX                                              |
++----------------+--------------------------------------------------+
+
+When this message is received, a DATA LOAD COMPLETED(Function:23h)
+message or a DATA LOAD ERROR(Function:24h) message will be transmitted.
+The data are combined in the order that Program, Multi, Pattern
+and Global/MIDI.
+
+
+(20) PARAMETER CHANGE                                            R/T
++----------------+--------------------------------------------------+
+|     Byte       |             Description                          |
++----------------+--------------------------------------------------+
+| F0,42,3g,46    | EXCLUSIVE HEADER                                 |
+| 0100 0001 (41) | PARAMETER CHANGE                       41H       |
+| 0000 00mm (0m) | Group(00:Global&MIDI/01:Prog/10:Pat/11:Multi)    |
+| 0ppp pppp (pp) | Parameter ID (LSB)                           [*2]|
+| 0ppp pppp (pp) | Parameter ID (MSB)                           [*2]|
+| 0vvv vvvv (vv) | Value    (LSB bit6~0)                            |
+| 0vvv vvvv (vv) | Value    (MSB bit13~7)                           |
+| 1111 0111 (F7) | EOX                                              |
++----------------+--------------------------------------------------+
+
+When this message is received, a DATA LOAD COMPLETED(Function:23h)
+message or a DATA LOAD ERROR(Function:24h) message will be transmitted.
+
+
+(21) DATA FORMAT ERROR                                             T
++----------------+--------------------------------------------------+
+|     Byte       |             Description                          |
++----------------+--------------------------------------------------+
+| F0,42,3g,46    | EXCLUSIVE HEADER                                 |
+| 0010 0110 (26) | DATA FORMAT ERROR                      26H       |
+| 1111 0111 (F7) | EOX                                              |
++----------------+--------------------------------------------------+
+
+
+(22) DATA LOAD COMPLETED                                           T
++----------------+--------------------------------------------------+
+|     Byte       |             Description                          |
++----------------+--------------------------------------------------+
+| F0,42,3g,46    | EXCLUSIVE HEADER                                 |
+| 0010 0011 (23) | DATA LOAD COMPLETED                    23H       |
+| 1111 0111 (F7) | EOX                                              |
++----------------+--------------------------------------------------+
+
+
+(23) DATA LOAD ERROR                                              T
++----------------+--------------------------------------------------+
+|     Byte       |             Description                          |
++----------------+--------------------------------------------------+
+| F0,42,3g,46    | EXCLUSIVE HEADER                                 |
+| 0010 0100 (24) | DATA LOAD ERROR                        24H       |
+| 0000 0000 (00) |                                                  |
+| 1111 0111 (F7) | EOX                                              |
++----------------+--------------------------------------------------+
+
+
+(24) WRITE COMPLETED                                               T
++----------------+--------------------------------------------------+
+|     Byte       |             Description                          |
++----------------+--------------------------------------------------+
+| F0,42,3g,46    | EXCLUSIVE HEADER                                 |
+| 0010 0001 (21) | WRITE COMPLETED                        21H       |
+| 1111 0111 (F7) | EOX                                              |
++----------------+--------------------------------------------------+
+
+
+(25) WRITE ERROR                                                   T
++----------------+--------------------------------------------------+
+|     Byte       |             Description                          |
++----------------+--------------------------------------------------+
+| F0,42,3g,46    | EXCLUSIVE HEADER                                 |
+| 0010 0010 (22) | WRITE ERROR                            22H       |
+| 0000 0000 (00) |                                                  |
+| 1111 0111 (F7) | EOX                                              |
++----------------+--------------------------------------------------+
+
+[*1]:The dump data conversion
+
+   DATA ( 1set = 8bit x 7Byte )
+   b7     ~      b0   b7     ~     b0     b7   ~~    b0    b7     ~      b0
+  +-+-+-+-+-+-+-+-+ +-+-+-+-+-+-+-+-+    +-+-+-~~-+-+-+   +-+-+-+-+-+-+-+-+
+  | | | | | | | | | | | | | | | | | |    | | |    | | |   | | | | | | | | |
+  +-+-+-+-+-+-+-+-+ +-+-+-+-+-+-+-+-+    +-+-+-~~-+-+-+   +-+-+-+-+-+-+-+-+
+        7n+0               7n+1           7n+2 ~~ 7n+5          7n+6
+
+   MIDI DATA ( 1set = 7bit x 8Byte )
+     b7b7b7b7b7b7b7     b6    ~     b0      b6 ~~    b0      b6    ~     b0
+  +-+-+-+-+-+-+-+-+ +-+-+-+-+-+-+-+-+    +-+-+-~~-+-+-+   +-+-+-+-+-+-+-+-+
+  |0| | | | | | | |   |0| | | | | | | |   |0| |    | | |   |0| | | | | | | |
+  +-+-+-+-+-+-+-+-+   +-+-+-+-+-+-+-+-+   +-+-+-~~-+-+-+   +-+-+-+-+-+-+-+-+
+  7n+6,5,4,3,2,1,0          7n+0           7n+1 ~~ 7n+5          7n+6
+
+
+[*2]:See the parameter lists.
+           KORG Z1 - Program Parameters                       Revision 1.0 (1997.9.12)
++====+===============================+============================+=========+=========+
+| ID |      Parameter Name           |         Display            | Value | Size      |
++====+===============================+============================+=========+=========+
+|    |[Program Common]               |                            |         |         |
+|1~16|Program Name                   |                            |20H~7FH |16        |
+| 17|Program Category                |Synth-Hard/Synth-Soft/~ [*1]|0~17     |1        |
+| 18|User Group                      |GROUP1~GROUP16              |0~15     |1        |
+| 19|Hold                            |OFF/ON                      |0/1      |1(Bit0) |
+| 20|Key Priority                    |LAST/LOW/HIGH               |0~2      |^(Bit1~2)|
+|    |(Voice Assign/Trigger)         |                            |         |         |
+| 21|Voice Assign Mode               |MONO_MULTI/MONO_SINGLE/POLY |0~2      |^(Bit3~4)|
+| 22|Retrigger Controller            |(Mod.Source List 2)         |0~45     |1        |
+| 23|Retrigger Control Threshold     |1~127                       |1~127    |1        |
+|    |(Unison)                       |                                      |         |
+| 24|Unison Type                     |OFF/2/3/6                   |0~3      |1(Bit0~1)|
+| 25|Unison SW                       |OFF/ON                      |0/1      |^(Bit2) |
+| 26|Unison Mode                     |FIXED/DYNAMIC               |0/1      |^(Bit3) |
+| 27|Unison Detune                   |0~99[cent]                  |0~99     |1        |
+|    |(Scale)                        |                            |         |         |
+| 28|Scale Key                       |C~B                         |0~11     |1(Bit0~3)|
+| 29|Scale Type                      |EQUAL_TEMP/PURE_MAJOR/~ [*2]|0~10     |^(Bit4~7)|
+| 30|Random Pitch Intensity          |0~99                        |0~99     |1        |
++----+-------------------------------+----------------------------+---------+---------+
+|    |                               |                            |Subtotal |       25|
++====+===============================+============================+=========+=========+
+|    |[EG1]                          |                            |         |         |
+| 31|Start Level                     |-99~+99                     |-99~+99 |1         |
+| 32|Attack Time                     |0~99                        |0~99     |1        |
+| 33|Attack Level                    |-99~+99                     |-99~+99 |1         |
+| 34|Decay Time                      |0~99                        |0~99     |1        |
+| 35|Break Level                     |-99~+99                     |-99~+99 |1         |
+| 36|Slope Time                      |0~99                        |0~99     |1        |
+| 37|Sustain Level                   |-99~+99                     |-99~+99 |1         |
+| 38|Release Time                    |0~99                        |0~99     |1        |
+| 39|Release Level                   |-99~+99                     |-99~+99 |1         |
+| 40|EG Level Mod Source             |(Mod.Source List 1)         |0~48     |1        |
+| 41|EG Level Mod Int.               |-99~+99                     |-99~+99 |1         |
+| 42|EG Level Velocity Control       |-99~+99                     |-99~+99 |1         |
+| 43|EG Time Mod Source              |(Mod.Source List 1)         |0~48     |1        |
+| 44|EG Time Mod Int.                |-99~+99                     |-99~+99 |1         |
+| 45|EG Node Time Mod Source         |(Mod.Source List 1)         |0~48     |1        |
+| 46|Attack Time Mod Int.            |-99~+99                     |-99~+99 |1         |
+| 47|Decay Time Mod Int.             |-99~+99                     |-99~+99 |1         |
+| 48|Slope Time Mod Int.             |-99~+99                     |-99~+99 |1         |
+| 49|Release Time Mod Int.           |-99~+99                     |-99~+99 |1         |
++----+-------------------------------+----------------------------+---------+---------+
+|    |                               |                            |Subtotal |       19|
++----+-------------------------------+----------------------------+---------+---------+
+|    |[EG2]                          |                            |         |         |
+| 50|Start Level                     |-99~+99                     |-99~+99 |1         |
+| 51|Attack Time                     |0~99                        |0~99     |1        |
+| 52|Attack Level                    |-99~+99                     |-99~+99 |1         |
+| 53|Decay Time                      |0~99                        |0~99     |1        |
+| 54|Break Level                     |-99~+99                     |-99~+99 |1         |
+| 55|Slope Time                      |0~99                        |0~99     |1        |
+| 56|Sustain Level                   |-99~+99                     |-99~+99 |1         |
+| 57|Release Time                    |0~99                        |0~99     |1        |
+| 58|Release Level                   |-99~+99                     |-99~+99 |1         |
+| 59|EG Level Mod Source             |(Mod.Source List 1)         |0~48     |1        |
+| 60|EG Level Mod Int.               |-99~+99                     |-99~+99 |1         |
+| 61|EG Level Velocity Control       |-99~+99                     |-99~+99 |1         |
+| 62|EG Time Mod Source              |(Mod.Source List 1)         |0~48     |1        |
+| 63|EG Time Mod Int.                |-99~+99                     |-99~+99 |1         |
+| 64|EG Node Time Mod Source         |(Mod.Source List 1)         |0~48     |1        |
+| 65|Attack Time Mod Int.            |-99~+99                     |-99~+99 |1         |
+| 66|Decay Time Mod Int.             |-99~+99                     |-99~+99 |1         |
+| 67|Slope Time Mod Int.             |-99~+99                     |-99~+99 |1         |
+| 68|Release Time Mod Int.           |-99~+99                     |-99~+99 |1         |
++----+-------------------------------+----------------------------+---------+---------+
+|    |                               |                            |Subtotal |       19|
++----+-------------------------------+----------------------------+---------+---------+
+|    |[EG3]                          |                            |         |         |
+| 69|Start Level                     |-99~+99                     |-99~+99 |1         |
+| 70|Attack Time                     |0~99                        |0~99     |1        |
+| 71|Attack Level                    |-99~+99                     |-99~+99 |1         |
+| 72|Decay Time                      |0~99                        |0~99     |1        |
+| 73|Break Level                     |-99~+99                     |-99~+99 |1         |
+| 74|Slope Time                      |0~99                        |0~99     |1        |
+| 75|Sustain Level                   |-99~+99                     |-99~+99 |1         |
+| 76|Release Time                    |0~99                        |0~99     |1        |
+| 77|Release Level                   |-99~+99                     |-99~+99 |1         |
+| 78|EG Level Mod Source             |(Mod.Source List 1)         |0~48     |1        |
+| 79|EG Level Mod Int.               |-99~+99                     |-99~+99 |1         |
+| 80|EG Level Velocity Control       |-99~+99                     |-99~+99 |1         |
+| 81|EG Time Mod Source              |(Mod.Source List 1)         |0~48     |1        |
+| 82|EG Time Mod Int.                |-99~+99                     |-99~+99 |1         |
+| 83|EG Node Time Mod Source         |(Mod.Source List 1)         |0~48     |1        |
+| 84|Attack Time Mod Int.            |-99~+99                     |-99~+99 |1         |
+| 85|Decay Time Mod Int.             |-99~+99                     |-99~+99 |1         |
+| 86|Slope Time Mod Int.             |-99~+99                     |-99~+99 |1         |
+| 87|Release Time Mod Int.           |-99~+99                     |-99~+99 |1         |
++----+-------------------------------+----------------------------+---------+---------+
+|    |                               |                            |Subtotal |       19|
++----+-------------------------------+----------------------------+---------+---------+
+|    |[EG4]                          |                            |         |         |
+| 88|Start Level                     |-99~+99                     |-99~+99 |1         |
+| 89|Attack Time                     |0~99                        |0~99     |1        |
+| 90|Attack Level                    |-99~+99                     |-99~+99 |1         |
+| 91|Decay Time                      |0~99                        |0~99     |1        |
+| 92|Break Level                     |-99~+99                     |-99~+99 |1         |
+| 93|Slope Time                      |0~99                        |0~99     |1        |
+| 94|Sustain Level                   |-99~+99                     |-99~+99 |1         |
+| 95|Release Time                    |0~99                        |0~99     |1        |
+| 96|Release Level                   |-99~+99                     |-99~+99 |1         |
+| 97|EG Level Mod Source             |(Mod.Source List 1)         |0~48     |1        |
+| 98|EG Level Mod Int.               |-99~+99                     |-99~+99 |1         |
+| 99|EG Level Velocity Control       |-99~+99                     |-99~+99 |1         |
+| 100|EG Time Mod Source             |(Mod.Source List 1)         |0~48     |1        |
+| 101|EG Time Mod Int.               |-99~+99                     |-99~+99 |1         |
+| 102|EG Node Time Mod Source        |(Mod.Source List 1)         |0~48     |1        |
+| 103|Attack Time Mod Int.           |-99~+99                     |-99~+99 |1         |
+| 104|Decay Time Mod Int.            |-99~+99                     |-99~+99 |1         |
+| 105|Slope Time Mod Int.            |-99~+99                     |-99~+99 |1         |
+| 106|Release Time Mod Int.          |-99~+99                     |-99~+99 |1         |
++----+-------------------------------+----------------------------+---------+---------+
+|    |                               |                            |Subtotal |       19|
++====+===============================+============================+=========+=========+
+|    |[LFO1]                         |                            |         |         |
+| 107|Wave Form                      |Triangle'0/Triangle'90/~[*3]|0~17     |1(Bit0~4)|
+| 108|Key Sync SW                    |OFF/byTIMBRE/byVOICE        |0/1/2    |^(Bit6~7)|
+| 109|Frequency                      |0~199                       |0~199    |1        |
+| 110|Frequency Mod1 Source          |(Mod.Source List 1)         |0~48     |1        |
+| 111|Frequency Mod1 Int.            |-99~+99                     |-99~+99 |1         |
+| 112|Frequency Mod2 Source          |(Mod.Source List 1)         |0~48     |1        |
+| 113|Frequency Mod2 Int.            |-99~+99                     |-99~+99 |1         |
+| 114|Fade In                        |0~99                        |0~99     |1        |
+| 115|Amplitude Mod Source           |(Mod.Source List 1)         |0~48     |1        |
+| 116|Amplitude Mod Int.             |-99~+99                     |-99~+99 |1         |
+| 117|Offset                         |-50~+50                     |-50~+50 |1         |
+| 118|MIDI Sync                      |OFF/ON                      |0/1      |1(Bit7) |
+| 119|MIDI Sync Base                 |~8T~                        |0~7      |^(Bit4~6)|
+| 120|MIDI Sync Time                 |1~16                        |0~15     |^(Bit0~3)|
++----+-------------------------------+----------------------------+---------+---------+
+|    |                               |                            |Subtotal |       11|
++----+-------------------------------+----------------------------+---------+---------+
+|    |[LFO2]                         |                            |         |         |
+| 121|Wave Form                      |Triangle'0/Triangle'90/~[*3]|0~17     |1(Bit0~4)|
+| 122|Key Sync SW                    |OFF/byTIMBRE/byVOICE        |0/1/2    |^(Bit6~7)|
+| 123|Frequency                      |0~199                       |0~199    |1        |
+| 124|Frequency Mod1 Source          |(Mod.Source List 1)         |0~48     |1        |
+| 125|Frequency Mod1 Int.            |-99~+99                     |-99~+99 |1         |
+| 126|Frequency Mod2 Source          |(Mod.Source List 1)         |0~48     |1        |
+| 127|Frequency Mod2 Int.            |-99~+99                     |-99~+99 |1         |
+| 128|Fade In                        |0~99                        |0~99     |1        |
+| 129|Amplitude Mod Source           |(Mod.Source List 1)         |0~48     |1        |
+| 130|Amplitude Mod Int.             |-99~+99                     |-99~+99 |1         |
+| 131|Offset                         |-50~+50                     |-50~+50 |1         |
+| 132|MIDI Sync                      |OFF/ON                      |0/1      |1(Bit7) |
+| 133|MIDI Sync Base                 |~8T~                        |0~7      |^(Bit4~6)|
+| 134|MIDI Sync Time                 |1~16                        |0~15     |^(Bit0~3)|
++----+-------------------------------+----------------------------+---------+---------+
+|    |                               |                            |Subtotal |       11|
++----+-------------------------------+----------------------------+---------+---------+
+|    |[LFO3]                         |                            |         |         |
+| 135|Wave Form                      |Triangle'0/Triangle'90/~[*3]|0~17     |1(Bit0~4)|
+| 136|Key Sync SW                    |OFF/byTIMBRE/byVOICE        |0/1/2    |^(Bit6~7)|
+| 137|Frequency                      |0~199                       |0~199    |1        |
+| 138|Frequency Mod1 Source          |(Mod.Source List 1)         |0~48     |1        |
+| 139|Frequency Mod1 Int.            |-99~+99                     |-99~+99 |1         |
+| 140|Frequency Mod2 Source          |(Mod.Source List 1)         |0~48     |1        |
+| 141|Frequency Mod2 Int.            |-99~+99                     |-99~+99 |1         |
+| 142|Fade In                        |0~99                        |0~99     |1        |
+| 143|Amplitude Mod Source           |(Mod.Source List 1)         |0~48     |1        |
+| 144|Amplitude Mod Int.             |-99~+99                     |-99~+99 |1         |
+| 145|Offset                         |-50~+50                     |-50~+50 |1         |
+| 146|MIDI Sync                      |OFF/ON                      |0/1      |1(Bit7) |
+| 147|MIDI Sync Base                 |~8T~                        |0~7      |^(Bit4~6)|
+| 148|MIDI Sync Time                 |1~16                        |0~15     |^(Bit0~3)|
++----+-------------------------------+----------------------------+---------+---------+
+|    |                               |                            |Subtotal |       11|
++----+-------------------------------+----------------------------+---------+---------+
+|    |[LFO4]                         |                            |         |         |
+| 149|Wave Form                      |Triangle'0/Triangle'90/~[*3]|0~17     |1(Bit0~4)|
+| 150|Key Sync SW                    |OFF/byTIMBRE/byVOICE        |0/1/2    |^(Bit6~7)|
+| 151|Frequency                      |0~199                       |0~199    |1        |
+| 152|Frequency Mod1 Source          |(Mod.Source List 1)         |0~48     |1        |
+| 153|Frequency Mod1 Int.            |-99~+99                     |-99~+99 |1         |
+| 154|Frequency Mod2 Source          |(Mod.Source List 1)         |0~48     |1        |
+| 155|Frequency Mod2 Int.            |-99~+99                     |-99~+99 |1         |
+| 156|Fade In                        |0~99                        |0~99     |1        |
+| 157|Amplitude Mod Source           |(Mod.Source List 1)         |0~48     |1        |
+| 158|Amplitude Mod Int.             |-99~+99                     |-99~+99 |1         |
+| 159|Offset                         |-50~+50                     |-50~+50 |1         |
+| 160|MIDI Sync                      |OFF/ON                      |0/1      |1(Bit7) |
+| 161|MIDI Sync Base                 |~8T~                        |0~7      |^(Bit4~6)|
+| 162|MIDI Sync Time                 |1~16                        |0~15     |^(Bit0~3)|
++----+-------------------------------+----------------------------+---------+---------+
+|    |                               |                            |Subtotal |       11|
++====+===============================+============================+=========+=========+
+|    |[OSC Common]                   |                            |         |         |
+|    |(Pitch Bend)                   |                            |         |         |
+| 163|Intensity(+)                   |-60~+24                     |-60~+24 |1         |
+| 164|Intensity(-)                   |-60~+24                     |-60~+24 |1         |
+| 165|Step(+)                        |0,/8,/4,/2,1~12             |0~15     |1(Bit0~3)|
+| 166|Step(-)                        |0,/8,/4,/2,1~12             |0~15     |^(Bit4~7)|
+|    |(Common Pitch Mod.)            |                            |         |         |
+| 167|Common Pitch Mod Source        |(Mod.Source List 1)         |0~48     |1        |
+| 168|Common Pitch Mod Int.          |-99~+99                     |-99~+99 |1         |
+|    |(Portamento)                   |                            |         |         |
+| 169|Portamento SW                  |OFF/ON                      |0/1      |1(Bit0) |
+| 170|Portamento Mode                |NORMAL/FINGERED             |0/1      |^(Bit1) |
+| 171|Portamento Time                |0~99                        |0~99     |1        |
+| 172|Portamento Time Mod Source     |(Mod.Source List 1)         |0~48     |1        |
+| 173|Portamento Time Mod Int.       |-99~+99                     |-99~+99 |1         |
++----+-------------------------------+----------------------------+---------+---------+
+|    |                               |                            |Subtotal |        9|
++----+-------------------------------+----------------------------+---------+---------+
+|    |[OSC1]                         |                            |         |         |
+| 174|Oscillator Type                |Std/Comb/VPM/Reso/~     [*4]|0~12     |1        |
+|    |(Pitch)                        |                            |         |         |
+| 175|Octave                         |32'~4'                      |0~3      |1        |
+| 176|Semi Tone                      |-12~+12                     |-12~+12 |1         |
+| 177|Fine Tune                      |-50~+50cent                 |-50~+50 |1         |
+| 178|Frequency Offset               |-10.0~+10.0Hz               |-100~+100|1        |
+|    |(Pitch Slope)                  |                            |         |         |
+| 179|Center Key                     |C-1~G9                      |0~127    |1        |
+| 180|Lower Slope                    |-1.00~+2.00                 |-50~+100 |1        |
+| 181|Higher Slope                   |-1.00~+2.00                 |-50~+100 |1        |
+|    |(Pitch Modulation)             |                            |         |         |
+| 182|Mod1 Source                    |(Mod.Source List 1)         |0~48     |1        |
+| 183|Mod1 Int.                      |-99~+99                     |-99~+99 |1         |
+| 184|Mod1 Int.Controller            |(Mod.Source List 1)         |0~48     |1        |
+| 185|Mod1 Int.Controller Int.       |-99~+99                     |-99~+99 |1         |
+| 186|Mod2 Source                    |(Mod.Source List 1)         |0~48     |1        |
+| 187|Mod2 Int.                      |-99~+99                     |-99~+99 |1         |
+|    |OSC2 Setting                   |                            |         |38       |
++----+-------------------------------+----------------------------+---------+---------+
+|    |                               |                            |Subtotal |       52|
++----+-------------------------------+----------------------------+---------+---------+
+|    |[OSC2]                         |                            |         |         |
+| 188|Oscillator Type                |Std/Comb/VPM/Reso/~     [*4]|0~8      |1        |
+|    |(Pitch)                        |                            |         |         |
+| 189|Octave                         |32'~4'                      |0~3      |1        |
+| 190|Semi Tone                      |-12~+12                     |-12~+12 |1         |
+| 191|Fine Tune                      |-50~+50cent                 |-50~+50 |1         |
+| 192|Frequency Offset               |-10.0~+10.0Hz               |-100~+100|1        |
+|    |(Pitch Slope)                  |                            |         |         |
+| 193|Center Key                     |C-1~G9                      |0~127    |1        |
+| 194|Lower Slope                    |-1.00~+2.00                 |-50~+100 |1        |
+| 195|Higher Slope                   |-1.00~+2.00                 |-50~+100 |1        |
+|    |(Pitch Modulation)             |                            |         |         |
+| 196|Mod1 Source                    |(Mod.Source List 1)         |0~48     |1        |
+| 197|Mod1 Int.                      |-99~+99                     |-99~+99 |1         |
+| 198|Mod1 Int.Controller            |(Mod.Source List 1)         |0~48     |1        |
+| 199|Mod1 Int.Controller Int.       |-99~+99                     |-99~+99 |1         |
+| 200|Mod2 Source                    |(Mod.Source List 1)         |0~48     |1        |
+| 201|Mod2 Int.                      |-99~+99                     |-99~+99 |1         |
+|    |OSC2 Setting                   |                            |         |38       |
++----+-------------------------------+----------------------------+---------+---------+
+|    |                               |                            |Subtotal |       52|
++----+-------------------------------+----------------------------+---------+---------+
+|    |[SUB OSC]                      |                            |         |         |
+|    |(Pitch)                        |                            |         |         |
+| 202|Octave                         |32'~4'                      |0~3      |1        |
+| 203|Semi Tone                      |-12~+12                     |-12~+12 |1         |
+| 204|Fine Tune                      |-50~+50cent                 |-50~+50 |1         |
+| 205|Frequency Offset               |-10.0~+10.0Hz               |-100~+100|1        |
+|    |(Pitch Slope)                  |                            |         |         |
+| 206|Center Key                     |C-1~G9                      |0~127    |1        |
+| 207|Lower Slope                    |-1.00~+2.00                 |-50~+100 |1        |
+| 208|Higher Slope                   |-1.00~+2.00                 |-50~+100 |1        |
+|    |(Pitch Modulation)             |                            |         |         |
+| 209|Mod1 Source                    |(Mod.Source List 1)         |0~48     |1        |
+| 210|Mod1 Int.                      |-99~+99                     |-99~+99 |1         |
+| 211|Mod1 Int.Controller            |(Mod.Source List 1)         |0~48     |1        |
+| 212|Mod1 Int.Controller Int.       |-99~+99                     |-99~+99 |1         |
+| 213|Mod2 Source                    |(Mod.Source List 1)         |0~48     |1        |
+| 214|Mod2 Int.                      |-99~+99                     |-99~+99 |1         |
+| 215|Wave Form                      |SAW/SQU/TRI/SIN             |0~3      |1        |
++----+-------------------------------+----------------------------+---------+---------+
+|    |                               |                            |Subtotal |       14|
++----+-------------------------------+----------------------------+---------+---------+
+|    |[Noise Generator]              |                            |         |         |
+| 216|Noise Filter Type              |THRU/LPF/HPF/BPF            |0~3      |1        |
+| 217|Noise Filter Input Trim        |0~99                        |0~99     |1        |
+| 218|Noise Filter Cutoff            |0~99                        |0~99     |1        |
+| 219|Noise Filter Cutoff Mod1 Source|(Mod.Source List 1)         |0~48     |1        |
+| 220|Noise Filter Cutoff Mod1 Int. |-99~+99                      |-99~+99 |1         |
+| 221|Noise Filter Cutoff Mod2 Source|(Mod.Source List 1)         |0~48     |1        |
+| 222|Noise Filter Cutoff Mod2 Int. |-99~+99                      |-99~+99 |1         |
+| 223|Noise Filter Resonance         |0~99                        |0~99     |1        |
++----+-------------------------------+----------------------------+---------+---------+
+|    |                               |                            |Subtotal |        8|
++====+===============================+============================+=========+=========+
+|    |[Mixer]                        |                            |         |         |
+|    |(OSC1 Out1)                    |                            |         |         |
+| 224|Level                          |0~99                        |0~99     |1        |
+| 225|Level Mod Source               |(Mod.Source List 1)         |0~48     |1        |
+| 226|Level Mod Int.                 |-99~+99                     |-99~+99 |1         |
+|    |(OSC1 Out2)                    |                            |         |         |
+| 227|Level                          |0~99                        |0~99     |1        |
+| 228|Level Mod Source               |(Mod.Source List 1)         |0~48     |1        |
+| 229|Level Mod Int.                 |-99~+99                     |-99~+99 |1         |
+|    |(OSC2 Out1)                    |                            |         |         |
+| 230|Level                          |0~99                        |0~99     |1        |
+| 231|Level Mod Source               |(Mod.Source List 1)         |0~48     |1        |
+| 232|Level Mod Int.                 |-99~+99                     |-99~+99 |1         |
+|    |(OSC2 Out2)                    |                            |         |         |
+| 233|Level                          |0~99                        |0~99     |1        |
+| 234|Level Mod Source               |(Mod.Source List 1)         |0~48     |1        |
+| 235|Level Mod Int.                 |-99~+99                     |-99~+99 |1         |
+|    |(SUB OSC Out1)                 |                            |         |         |
+| 236|Level                          |0~99                        |0~99     |1        |
+| 237|Level Mod Source               |(Mod.Source List 1)         |0~48     |1        |
+| 238|Level Mod Int.                 |-99~+99                     |-99~+99 |1         |
+|    |(SUB OSC Out2)                 |                            |         |         |
+| 239|Level                          |0~99                        |0~99     |1        |
+| 240|Level Mod Source               |(Mod.Source List 1)         |0~48     |1        |
+| 241|Level Mod Int.                 |-99~+99                     |-99~+99 |1         |
+|    |(NOISE Out1)                   |                            |         |         |
+| 242|Level                          |0~99                        |0~99     |1        |
+| 243|Level Mod Source               |(Mod.Source List 1)         |0~48     |1        |
+| 244|Level Mod Int.                 |-99~+99                     |-99~+99 |1         |
+|    |(NOISE Out2)                   |                            |         |         |
+| 245|Level                          |0~99                        |0~99     |1        |
+| 246|Level Mod Source               |(Mod.Source List 1)         |0~48     |1        |
+| 247|Level Mod Int.                 |-99~+99                     |-99~+99 |1         |
+|    |(Feedback Out1)                |                            |         |         |
+| 248|Level                          |0~99                        |0~99     |1        |
+| 249|Level Mod Source               |(Mod.Source List 1)         |0~48     |1        |
+| 250|Level Mod Int.                 |-99~+99                     |-99~+99 |1         |
+|    |(Feedback Out2)                |                            |         |         |
+| 251|Level                          |0~99                        |0~99     |1        |
+| 252|Level Mod Source               |(Mod.Source List 1)         |0~48     |1        |
+| 253|Level Mod Int.                 |-99~+99                     |-99~+99 |1         |
+|    |(Mixer SW)                     |                            |         |         |
+| 254|OSC1 Mixer Output SW           |OFF/ON                      |0/1      |1(Bit0) |
+| 255|OSC2 Mixer Output SW           |OFF/ON                      |0/1      |^(Bit1) |
+| 256|SUB Mixer Output SW            |OFF/ON                      |0/1      |^(Bit2) |
+| 257|Noise Mixer Output SW          |OFF/ON                      |0/1      |^(Bit3) |
++----+-------------------------------+----------------------------+---------+---------+
+|    |                               |                            |Subtotal |       31|
++====+===============================+============================+=========+=========+
+|    |[Filter]                       |                            |         |         |
+| 258|Filter Routing                 |SERI1/SERI2/PARA            |0/1/2    |1(Bit0~1)|
+| 259|Filter2 Link Switch            |OFF/ON                      |0/1      |^(Bit2) |
+| 260|Filter EG Knob's Target        |FLT1/FLT2/FLT1&2            |1~3      |^(Bit4~5)|
++----+-------------------------------+----------------------------+---------+---------+
+|    |[Filter 1]                     |                            |         |         |
+| 261|Filter Type                    |LPF/HPF/BPF/BRF/2BPF        |1~5      |1        |
+| 262|Input Trim                     |0~99                        |0~99     |1        |
+| 263|Cutoff Frequency               |0~99                        |0~99     |1        |
+|    |(Cutoff Keyboard Track)        |                            |         |         |
+| 264|Low Key                        |C-1~G9                      |0~127    |1        |
+| 265|High Key                       |C-1~G9                      |0~127    |1        |
+| 266|Lower Intensity                |-99~+99                     |-99~+99 |1         |
+| 267|Higher Intensity               |-99~+99                     |-99~+99 |1         |
+|    |(Cutoff Modulation)            |                            |         |         |
+| 268|Cutoff Frequency Mod EG        |EG1~EG4/A.EG                |1~5      |1        |
+| 269|Cutoff Frequency Mod EG Int.   |-99~+99                     |-99~+99 |1         |
+| 270|Cutoff Frequency Mod1 Source   |(Mod.Source List 1)         |0~48     |1        |
+| 271|Cutoff Frequency Mod1 Int.     |-99~+99                     |-99~+99 |1         |
+| 272|Cutoff Frequency Mod2 Source   |(Mod.Source List 1)         |0~48     |1        |
+| 273|Cutoff Frequency Mod2 Int.     |-99~+99                     |-99~+99 |1         |
+|    |(Resonance)                    |                            |         |         |
+| 274|Resonance                      |0~99                        |0~99     |1        |
+| 275|Resonance Mod Source           |(Mod.Source List 1)         |0~48     |1        |
+| 276|Resonance Mod Int.             |-99~+99                     |-99~+99 |1         |
+|    |(Filter-B)                     |                            |         |         |
+| 277|Input Trim                     |0~99                        |0~99     |1        |
+| 278|Cutoff Frequency               |0~99                        |0~99     |1        |
+|    |(Cutoff-B Keyboard Track)      |                            |         |         |
+| 279|Low Key                        |C-1~G9                      |0~127    |1        |
+| 280|High Key                       |C-1~G9                      |0~127    |1        |
+| 281|Lower Intensity                |-99~+99                     |-99~+99 |1         |
+| 282|Higher Intensity               |-99~+99                     |-99~+99 |1         |
+|    |(Cutoff-B Modulation)          |                            |         |         |
+| 283|Cutoff Frequency Mod EG Int.   |-99~+99                     |-99~+99 |1         |
+| 284|Cutoff Frequency Mod1 Int.     |-99~+99                     |-99~+99 |1         |
+| 285|Cutoff Frequency Mod2 Int.     |-99~+99                     |-99~+99 |1         |
+|    |(Resonance-B)                  |                            |         |         |
+| 286|Resonance                      |0~99                        |0~99     |1        |
+| 287|Resonance Mod Int.             |-99~+99                     |-99~+99 |1         |
++----+-------------------------------+----------------------------+---------+---------+
+|    |[Filter 2]                     |                            |         |         |
+| 288|Filter Type                    |LPF/HPF/BPF/BRF/2BPF        |1~5      |1        |
+| 289|Input Trim                     |0~99                        |0~99     |1        |
+| 290|Cutoff Frequency               |0~99                        |0~99     |1        |
+|    |(Cutoff Keyboard Track)        |                            |         |         |
+| 291|Low Key                        |C-1~G9                      |0~127    |1        |
+| 292|High Key                       |C-1~G9                      |0~127    |1        |
+| 293|Lower Intensity                |-99~+99                     |-99~+99 |1         |
+| 294|Higher Intensity               |-99~+99                     |-99~+99 |1         |
+|    |(Cutoff Modulation)            |                            |         |         |
+| 295|Cutoff Frequency Mod EG        |EG1~EG4/A.EG                |1~5      |1        |
+| 296|Cutoff Frequency Mod EG Int.   |-99~+99                     |-99~+99 |1         |
+| 297|Cutoff Frequency Mod1 Source   |(Mod.Source List 1)         |0~48     |1        |
+| 298|Cutoff Frequency Mod1 Int.     |-99~+99                     |-99~+99 |1         |
+| 299|Cutoff Frequency Mod2 Source   |(Mod.Source List 1)         |0~48     |1        |
+| 300|Cutoff Frequency Mod2 Int.     |-99~+99                     |-99~+99 |1         |
+|    |(Resonance)                    |                            |         |         |
+| 301|Resonance                      |0~99                        |0~99     |1        |
+| 302|Resonance Mod Source           |(Mod.Source List 1)         |0~48     |1        |
+| 303|Resonance Mod Int.             |-99~+99                     |-99~+99 |1         |
+|    |(Filter-B)                     |                            |         |         |
+| 304|Input Trim                     |0~99                        |0~99     |1        |
+| 305|Cutoff Frequency               |0~99                        |0~99     |1        |
+|    |(Cutoff-B Keyboard Track)      |                            |         |         |
+| 306|Low Key                        |C-1~G9                      |0~127    |1        |
+| 307|High Key                       |C-1~G9                      |0~127    |1        |
+| 308|Lower Intensity                |-99~+99                     |-99~+99 |1         |
+| 309|Higher Intensity               |-99~+99                     |-99~+99 |1         |
+|    |(Cutoff-B Modulation)          |                            |         |         |
+| 310|Cutoff Frequency Mod EG Int.   |-99~+99                     |-99~+99 |1         |
+| 311|Cutoff Frequency Mod1 Int.     |-99~+99                     |-99~+99 |1         |
+| 312|Cutoff Frequency Mod2 Int.     |-99~+99                     |-99~+99 |1         |
+|    |(Resonance-B)                  |                            |         |         |
+| 313|Resonance                      |0~99                        |0~99     |1        |
+| 314|Resonance Mod Int.             |-99~+99                     |-99~+99 |1         |
++----+-------------------------------+----------------------------+---------+---------+
+|    |                               |                            |Subtotal |       55|
++====+===============================+============================+=========+=========+
+|    |[Amplitude]                    |                            |         |         |
+|    |[Amp 1]                        |                            |         |         |
+| 315|Amplitude                      |0~99                        |0~99     |1        |
+|    |(Amp Keyboard Track)           |                            |         |         |
+| 316|Low Key                        |C-1~G9                      |0~127    |1        |
+| 317|High Key                       |C-1~G9                      |0~127    |1        |
+| 318|Lower Int.                     |-99~+99                     |-99~+99 |1         |
+| 319|Higher Int.                    |-99~+99                     |-99~+99 |1         |
+|    |(Amp Modulation)               |                            |         |         |
+| 320|Amplitude Mod EG               |EG1~EG4/A.EG                |1~5      |1        |
+| 321|reserved                       |                            |         |1        |
+| 322|Amplitude Mod Source           |(Mod.Source List 1)         |0~48     |1        |
+| 323|Amplitude Mod Int.             |-99~+99                     |-99~+99 |1         |
++----+-------------------------------+----------------------------+---------+---------+
+|    |[Amp 2]                        |                            |         |         |
+| 324|Amplitude                      |0~99                        |0~99     |1        |
+|    |(Amp Keyboard Track)           |                            |         |         |
+| 325|Low Key                        |C-1~G9                      |0~127    |1        |
+| 326|High Key                       |C-1~G9                      |0~127    |1        |
+| 327|Lower Intensity                |-99~+99                     |-99~+99 |1         |
+| 328|Higher Intensity               |-99~+99                     |-99~+99 |1         |
+|    |(Amp Modulation)               |                            |         |         |
+| 329|Amplitude Mod EG               |EG1~EG4/A.EG                |1~5      |1        |
+| 330|(Not Use)                      |-99~+99                     |-99~+99 |1         |
+| 331|Amplitude Mod Source           |(Mod.Source List 1)         |0~48     |1        |
+| 332|Amplitude Mod Int.             |-99~+99                     |-99~+99 |1         |
++----+-------------------------------+----------------------------+---------+---------+
+|    |[Amp EG]                       |                            |         |         |
+| 333|reserved                       |0~99                        |0~99     |1        |
+| 334|Attack Time                    |0~99                        |0~99     |1        |
+| 335|Attack Level                   |0~99                        |0~99     |1        |
+| 336|Decay Time                     |0~99                        |0~99     |1        |
+| 337|Break Level                    |0~99                        |0~99     |1        |
+| 338|Slope Time                     |0~99                        |0~99     |1        |
+| 339|Sustain Level                  |0~99                        |0~99     |1        |
+| 340|Release Time                   |0~99                        |0~99     |1        |
+| 341|reserved                       |                            |         |1        |
+| 342|EG Level Mod Source            |(Mod.Source List 1)         |0~48     |1        |
+| 343|EG Level Mod Int.              |-99~+99                     |-99~+99 |1         |
+| 344|EG Level Velocity Control      |-99~+99                     |-99~+99 |1         |
+| 345|EG Time Mod Source             |(Mod.Source List 1)         |0~48     |1        |
+| 346|EG Time Mod Int.               |-99~+99                     |-99~+99 |1         |
+| 347|EG Node Time Mod Source        |(Mod.Source List 1)         |0~48     |1        |
+| 348|Attack Time Mod Int.           |-99~+99                     |-99~+99 |1         |
+| 349|Decay Time Mod Int.            |-99~+99                     |-99~+99 |1         |
+| 350|Slope Time Mod Int.            |-99~+99                     |-99~+99 |1         |
+| 351|Release Time Mod Int.          |-99~+99                     |-99~+99 |1         |
++----+-------------------------------+----------------------------+---------+---------+
+|    |                               |                            |Subtotal |       37|
++====+===============================+============================+=========+=========+
+|    |[Output]                       |                            |         |         |
+| 352|Panpot                         |LEFT~CENTER~RIGHT           |0^64~127 |1        |
+| 353|Panpot Mod Source              |(Mod.Source List 1)         |0~48     |1        |
+| 354|Panpot Mod Int.                |-99~+99                     |-99~+99 |1         |
+| 355|Output Level                   |0~127                       |0~127    |1        |
++----+-------------------------------+----------------------------+---------+---------+
+|    |                               |                            |Subtotal |        4|
++====+===============================+============================+=========+=========+
+|    |[Effect]                       |                            |         |         |
+| 356|Effect Send                    |0~100%                      |0~100    |1        |
+| 357|Effect Send Mod Source         |(Mod.Source List 1)         |0~48     |1        |
+| 358|Effect Send Mod Int.           |-99~+99                     |-99~+99 |1         |
+|    |(Effect 1)                     |                            |         |         |
+| 359|Effect1 Select                 |OD~R.SPEAKER            [*5]|0~14     |1        |
+|    |Effect1 Setting                |                            |         |22       |
+|    |(Effect 2)                     |                            |         |         |
+| 360|Effect2 Select                 |OD~DELAY                [*5]|0~10     |1        |
+|    |Effect2 Setting                |                            |         |22       |
+|    |(Master Effect)                |                            |         |         |
+| 361|Master Effect Select           |ST.DELAY~REVERB-ROOM    [*6]|0~2      |1        |
+|    |Master Effect Setting          |                            |         |18       |
+|    |[2 Band EQ]                    |                            |         |         |
+| 362|Low Freq                       |80.00Hz~2.39kHz             |0~49     |1        |
+| 363|Low Gain                       |-18.0~+18.0dB               |-36~+36 |1         |
+| 364|High Freq                      |400.0~11.9kHz               |0~49     |1        |
+| 365|High Gain                      |-18.0~+18.0dB               |-36~+36 |1         |
++----+-------------------------------+----------------------------+---------+---------+
+|    |                               |                            |Subtotal |       72|
++====+===============================+============================+=========+=========+
+|    |[Controller]                   |                            |         |         |
+| 366|SW1 Function                   |MOD.SW1/MasterFXSW/~    [*7]|0~7      |1(Bit0~6)|
+| 367|SW1 Mode                       |LATCH/UNLATCH               |0/1      |^(Bit7) |
+| 368|SW2 Function                   |MOD.SW2/MasterFXSW/~    [*8]|0~7      |1(Bit0~6)|
+| 369|SW2 Mode                       |LATCH/UNLATCH               |0/1      |^(Bit7) |
+| 370|Assignable Foot SW Function    |FT.SW/MIDI_Damper/~     [*9]|0~12     |1(Bit0~6)|
+| 371|Assignable Foot SW Mode        |LATCH/UNLATCH               |0/1      |^(Bit7) |
+| 372|Assignable Pedal Function      |FT.Pedal/MIDI_BC/~     [*10]|0~5      |1(Bit0~2)|
+| 373|Pad Hold                       |OFF/ON                      |0/1      |^(Bit3) |
++----+-------------------------------+----------------------------+---------+---------+
+|    |                               |                            |Subtotal |        4|
++====+===============================+============================+=========+=========+
+|    |[Link Arpeggio]                |                            |         |         |
+| 374|Pattern                        |UP~U3-5                     |0~19     |1        |
+| 375|Latch                          |OFF/ON                      |0/1      |1(Bit0) |
+| 376|Key Sync                       |OFF/ON                      |0/1      |^(Bit1) |
+| 377|Octave                         |1~4                         |0~3      |^(Bit2~3)|
+| 378|Keyboard OFF/ON                |OFF/ON                      |0/1      |^(Bit4) |
+| 379|Auto Run                       |OFF/ON                      |0/1      |^(Bit5) |
+| 380|VelocityControl                |-127~127                    |-127~127 |1        |
+| 381|GateControl                    |-127~127                    |-127~127 |1        |
+| 382|Resolution                     |16T/16/8T/8/4T/4            |0~5      |1        |
+| 383|Speed                          |30~285                      |0~255    |1        |
+|    |                               |                            |         |7        |
++----+-------------------------------+----------------------------+---------+---------+
+|    |                               |                            |Subtotal |       13|
++====+===============================+============================+=========+=========+
+|    |[PE Knob1]                     |                            |         |         |
+| 384| Parameter                     |OFF~                   [*11]|0~230    |1        |
+| 385| Left Value                    |0~100%                      |0~100    |1        |
+| 386| Right Value                   |0~100%                      |0~100    |1        |
+| 387| Curve                         |LINE/EXPO/LOG/SW            |0/1/2/3 |1         |
+| 388| Parameter                     |OFF~                   [*11]|0~230    |1        |
+| 389| Left Value                    |0~100%                      |0~100    |1        |
+| 390| Right Value                   |0~100%                      |0~100    |1        |
+| 391| Curve                         |LINE/EXPO/LOG/SW            |0/1/2/3 |1         |
+| 392| Parameter                     |OFF~                   [*11]|0~230    |1        |
+| 393| Left Value                    |0~100%                      |0~100    |1        |
+| 394| Right Value                   |0~100%                      |0~100    |1        |
+| 395| Curve                         |LINE/EXPO/LOG/SW            |0/1/2/3 |1         |
+| 396| Parameter                     |OFF~                   [*11]|0~230    |1        |
+| 397| Left Value                    |0~100%                      |0~100    |1        |
+| 398| Right Value                   |0~100%                      |0~100    |1        |
+| 399| Curve                         |LINE/EXPO/LOG/SW            |0/1/2/3 |1         |
+|    |[PE Knob2]                     |                            |         |         |
+| 400| Parameter                     |OFF~                   [*11]|0~230    |1        |
+| 401| Left Value                    |0~100%                      |0~100    |1        |
+| 402| Right Value                   |0~100%                      |0~100    |1        |
+| 403| Curve                         |LINE/EXPO/LOG/SW            |0/1/2/3 |1         |
+| 404| Parameter                     |OFF~                   [*11]|0~230    |1        |
+| 405| Left Value                    |0~100%                      |0~100    |1        |
+| 406| Right Value                   |0~100%                      |0~100    |1        |
+| 407| Curve                         |LINE/EXPO/LOG/SW            |0/1/2/3 |1         |
+| 408| Parameter                     |OFF~                   [*11]|0~230    |1        |
+| 409| Left Value    |0~100%                  |0~100     |1   |
+| 410| Right Value   |0~100%                  |0~100     |1   |
+| 411| Curve         |LINE/EXPO/LOG/SW        |0/1/2/3   |1   |
+| 412| Parameter     |OFF~               [*11]|0~230     |1   |
+| 413| Left Value    |0~100%                  |0~100     |1   |
+| 414| Right Value   |0~100%                  |0~100     |1   |
+| 415| Curve         |LINE/EXPO/LOG/SW        |0/1/2/3   |1   |
+|    |[PE Knob3]     |                        |          |    |
+| 416| Parameter     |OFF~               [*11]|0~230     |1   |
+| 417| Left Value    |0~100%                  |0~100     |1   |
+| 418| Right Value   |0~100%                  |0~100     |1   |
+| 419| Curve         |LINE/EXPO/LOG/SW        |0/1/2/3   |1   |
+| 420| Parameter     |OFF~               [*11]|0~230     |1   |
+| 421| Left Value    |0~100%                  |0~100     |1   |
+| 422| Right Value   |0~100%                  |0~100     |1   |
+| 423| Curve         |LINE/EXPO/LOG/SW        |0/1/2/3   |1   |
+| 424| Parameter     |OFF~               [*11]|0~230     |1   |
+| 425| Left Value    |0~100%                  |0~100     |1   |
+| 426| Right Value   |0~100%                  |0~100     |1   |
+| 427| Curve         |LINE/EXPO/LOG/SW        |0/1/2/3   |1   |
+| 428| Parameter     |OFF~               [*11]|0~230     |1   |
+| 429| Left Value    |0~100%                  |0~100     |1   |
+| 430| Right Value   |0~100%                  |0~100     |1   |
+| 431| Curve         |LINE/EXPO/LOG/SW        |0/1/2/3   |1   |
+|    |[PE Knob4]     |                        |          |    |
+| 432| Parameter     |OFF~               [*11]|0~230     |1   |
+| 433| Left Value    |0~100%                  |0~100     |1   |
+| 434| Right Value   |0~100%                  |0~100     |1   |
+| 435| Curve         |LINE/EXPO/LOG/SW        |0/1/2/3   |1   |
+| 436| Parameter     |OFF~               [*11]|0~230     |1   |
+| 437| Left Value    |0~100%                  |0~100     |1   |
+| 438| Right Value   |0~100%                  |0~100     |1   |
+| 439| Curve         |LINE/EXPO/LOG/SW        |0/1/2/3   |1   |
+| 440| Parameter     |OFF~               [*11]|0~230     |1   |
+| 441| Left Value    |0~100%                  |0~100     |1   |
+| 442| Right Value   |0~100%                  |0~100     |1   |
+| 443| Curve         |LINE/EXPO/LOG/SW        |0/1/2/3   |1   |
+| 444| Parameter     |OFF~               [*11]|0~230     |1   |
+| 445| Left Value    |0~100%                  |0~100     |1   |
+| 446| Right Value   |0~100%                  |0~100     |1   |
+| 447| Curve         |LINE/EXPO/LOG/SW        |0/1/2/3   |1   |
+|    |[PE Knob5]     |                        |          |    |
+| 448| Parameter                     |OFF~                   [*11]|0~230    |1        |
+| 449| Left Value                    |0~100%                      |0~100    |1        |
+| 450| Right Value                   |0~100%                      |0~100    |1        |
+| 451| Curve                         |LINE/EXPO/LOG/SW            |0/1/2/3 |1         |
+| 452| Parameter                     |OFF~                   [*11]|0~230    |1        |
+| 453| Left Value                    |0~100%                      |0~100    |1        |
+| 454| Right Value                   |0~100%                      |0~100    |1        |
+| 455| Curve                         |LINE/EXPO/LOG/SW            |0/1/2/3 |1         |
+| 456| Parameter                     |OFF~                   [*11]|0~230    |1        |
+| 457| Left Value                    |0~100%                      |0~100    |1        |
+| 458| Right Value                   |0~100%                      |0~100    |1        |
+| 459| Curve                         |LINE/EXPO/LOG/SW            |0/1/2/3 |1         |
+| 460| Parameter                     |OFF~                   [*11]|0~230    |1        |
+| 461| Left Value                    |0~100%                      |0~100    |1        |
+| 462| Right Value                   |0~100%                      |0~100    |1        |
+| 463| Curve                         |LINE/EXPO/LOG/SW            |0/1/2/3 |1         |
++----+-------------------------------+----------------------------+---------+---------+
+|    |                               |                            |Subtotal |       80|
++====+===============================+============================+=========+=========+
+|                                                                 | Total   |      576|
++====+===============================+============================+=========+=========+
+
+      OSC Parameters
++====+===============================+============================+=========+=========+
+|    |[Standard OSC]                 |                            |         |         |
+| 464|Wave                           |SAW/PULSE                   |0/1      |1        |
+| 465|Wave Edge                      |0~99                        |0~99     |1        |
+| 466|Wave Level                     |0~99                        |0~99     |1        |
+| 467|Triangle Level                 |0~99                        |0~99     |1        |
+| 468|Sine Level                     |0~99                        |0~99     |1        |
+| 469|Triangle Phase Shift           |-99~+99                     |-99~+99 |1         |
+| 470|Wave Form                      |-99~+99                     |-99~+99 |1         |
+| 471|Wave Form Mod LFO              |LFO1~LFO4                   |6~9      |1        |
+| 472|Wave Form Mod LFO Int.         |-99~+99                     |-99~+99 |1         |
+| 473|Wave Form Mod Source           |(Mod.Source List 1)         |0~48     |1        |
+| 474|Wave Form Mod Int.             |-99~+99                     |-99~+99 |1         |
+|    |(Wave Shape)                   |                            |         |         |
+| 475|Wave Shape Input Level         |0~99                        |0~99     |1        |
+| 476|Wave Shape Input Lvl Mod Source|(Mod.Source List 1)         |0~48     |1        |
+| 477|Wave Shape Input Lvl Mod Int   |-99~+99                     |-99~+99 |1         |
+| 478|Wave Shape Offset              |-99~+99                     |-99~+99 |1         |
+| 479|Wave Shape Table               |CLIP/RESO                   |0/1      |1        |
+| 480|Wave Shape                     |0~99                        |0~99     |1        |
+| 481|Wave Shape Mod Source          |(Mod.Source List 1)         |0~48     |1        |
+| 482|Wave Shape Mod Int.            |-99~+99                     |-99~+99 |1         |
+| 483|Wave Shape Balance             |0~99                        |0~99     |1        |
+| 484|Wave Shape Balance Mod Source |(Mod.Source List 1)          |0~48     |1        |
+| 485|Wave Shape Balance Mod Int.    |-99~+99                     |-99~+99 |1         |
++----+-------------------------------+----------------------------+---------+---------+
+|    |[Comb Filter OSC]              |                            |         |         |
+| 486|Input Select                   |SC1+Noise/SubOSC+Noise/     |0~5      |1        |
+|    |                               |Filter1+Noise/Filtyer2+Noise|         |         |
+|    |                               |/Pulse Noise/Impulse        |         |         |
+| 487|Input Wave Level               |0~99                        |0~99     |1        |
+| 488|Noise Level                    |0~99                        |0~99     |1        |
+| 489|Width                          |0~99                        |0~99     |1        |
+| 490|Input Level Mod Source         |(Mod.Source List 1)         |0~48     |1        |
+| 491|Input Level Mod Int.           |-99~+99                     |-99~+99 |1         |
+| 492|Comb Filter Feedback           |0~99                        |0~99     |1        |
+| 493|Feedback Mod1 Source           |(Mod.Source List 1)         |0~48     |1        |
+| 494|Feedback Mod1 Int.             |-99~+99                     |-99~+99 |1         |
+| 495|Feedback Mod2 Source           |(Mod.Source List 1)         |0~48     |1        |
+| 496|Feedback Mod2 Int.             |-99~+99                     |-99~+99 |1         |
+| 497|High Damp                      |0~99                        |0~99     |1        |
+| 498|High Damp Mod Source           |(Mod.Source List 1)         |0~48     |1        |
+| 499|High Damp Mod Int.             |-99~+99                     |-99~+99 |1         |
++----+-------------------------------+----------------------------+---------+---------+
+|    |[VPM OSC]                      |                            |         |         |
+|    |(Carrier)                      |                            |         |         |
+| 500|Wave                           |SAW/SQU/TRI/SIN             |0/1/2/3 |1         |
+| 501|Level                          |0~99                        |0~99     |1        |
+| 502|Level Mod1 Source              |(Mod.Source List 1)         |0~48     |1        |
+| 503|Level Mod1 Int.                |-99~+99                     |-99~+99 |1         |
+| 504|Level Mod2 Source              |(Mod.Source List 1)         |0~48     |1        |
+| 505|Level Mod2 Int.                |-99~+99                     |-99~+99 |1         |
+| 506|Wave Shape                     |0~99                        |0~99     |1        |
+| 507|Wave Shape Mod1 Source         |(Mod.Source List 1)         |0~48     |1        |
+| 508|Wave Shape Mod1 Int.           |-99~+99                     |-99~+99 |1         |
+| 509|Wave Shape Mod2 Source         |(Mod.Source List 1)         |0~48     |1        |
+| 510|Wave Shape Mod2 Int.           |-99~+99                     |-99~+99 |1         |
+| 511|Wave Shape Type                |1/2                         |0/1      |1        |
+| 512|Feedback                       |0~99                        |0~99     |1        |
+|    |(Modulator)                    |                            |         |         |
+| 513|Frequency Coarse               |0.5/1~16                    |0~16     |1        |
+| 514|Frequency Fine                 |-50~+50                     |-50~+50 |1         |
+| 515|Frequency Mod1 Source          |(Mod.Source List 1)         |0~48     |1        |
+| 516|Frequency Mod1 Int.            |-99~+99                     |-99~+99 |1         |
+| 517|Frequency Mod2 Source          |(Mod.Source List 1)         |0~48     |1        |
+| 518|Frequency Mod2 Int.            |-99~+99                     |-99~+99 |1         |
+| 519|Wave                           |SAW/SQU/TRI/SIN/OSC1(2)     |0~7      |1        |
+|    |                               |/Sub OSC/Filter1/Filter2    |         |         |
+| 520|Level                          |0~99                        |0~99     |1        |
+| 521|Level Mod.1 Source             |(Mod.Source List 1)         |0~48     |1        |
+| 522|Level Mod.1 Intensity          |-99~+99                     |-99~+99 |1         |
+| 523|Level Mod.2 Source             |(Mod.Source List 1)         |0~48     |1        |
+| 524|Level Mod.2 Intensity          |-99~+99                     |-99~+99 |1         |
++----+-------------------------------+----------------------------+---------+---------+
+|    |[Resonance OSC]                |                            |         |         |
+| 525|Input Select                   |OSC1(2)/Sub OSC/Noise       |0~4      |1        |
+|    |                               |/Filter1/Filter2            |         |         |
+| 526|Input Level                    |0~99                        |0~99     |1        |
+| 527|Input Level Mod1 Source        |(Mod.Source List 1)         |0~48     |1        |
+| 528|Input Level Mod1 Int.          |-99~+99                     |-99~+99 |1         |
+| 529|Input Level Mod2 Source        |(Mod.Source List 1)         |0~48     |1        |
+| 530|Input Level Mod2 Int.          |-99~+99                     |-99~+99 |1         |
+|    |(BPF1)                         |                            |         |         |
+| 531|Resonance1                     |0~99                        |0~99     |1        |
+| 532|Harmonics1                     |1~16                        |0~15     |1        |
+| 533|Harmonics1 Mod Source          |(Mod.Source List 1)         |0~48     |1        |
+| 534|Harmonics1 Mod Int.            |-15~+15                     |-15~+15 |1         |
+| 535|Frequency Fine1                |-99~+99                     |-99~+99 |1         |
+| 536|Level1                         |0~99                        |0~99     |1        |
+|    |(BPF2)                         |                            |         |         |
+| 537|Resonance2                     |0~99                        |0~99     |1        |
+| 538|Harmonics2                     |1~16                        |0~15     |1        |
+| 539|Harmonics2 Mod Source          |(Mod.Source List 1)         |0~48     |1        |
+| 540|Harmonics2 Mod Int.            |-15~+15                     |-15~+15 |1         |
+| 541|Frequency Fine2                |-99~+99                     |-99~+99 |1         |
+| 542|Level2                         |0~99                        |0~99     |1        |
+|    |(BPF3)                         |                            |         |         |
+| 543|Resonance3                     |0~99                        |0~99     |1        |
+| 544|Harmonics3                     |1~16                        |0~15     |1        |
+| 545|Harmonics3 Mod Source          |(Mod.Source List 1)         |0~48     |1        |
+| 546|Harmonics3 Mod Int.            |-15~+15                     |-15~+15 |1         |
+| 547|Frequency Fine3                |-99~+99                     |-99~+99 |1         |
+| 548|Level3                         |0~99                        |0~99     |1        |
+|    |(BPF4)                         |                            |         |         |
+| 549|Resonance4                     |0~99                        |0~99     |1        |
+| 550|Harmonics4                     |1~16                        |0~15     |1        |
+| 551|Harmonics4 Mod Source          |(Mod.Source List 1)         |0~48     |1        |
+| 552|Harmonics4 Mod Int.            |-15~+15                     |-15~+15 |1         |
+| 553|Frequency Fine4                |-99~+99                     |-99~+99 |1         |
+| 554|Level4                         |0~99                        |0~99     |1        |
+| 555|Resonance Mod Source           |(Mod.Source List 1)         |0~48     |1        |
+| 556|Resonance Mod Int.             |-99~+99                     |-99~+99 |1         |
++----+-------------------------------+----------------------------+---------+---------+
+|    |[Ring Mod.OSC]                 |                            |         |         |
+| 557|Input Select                   |OSC1(2)/SubOSC/Noise        |0~4      |1        |
+|    |                               |/Filter1/Filter2            |         |         |
+| 558|Carrier Wave                   |SAW/SQU/TRI/SIN             |0~3      |1        |
+| 559|Modulation Depth               |0~99                        |0~99     |1        |
+| 560|Modulation Depth Mod1 Source   |(Mod.Source List 1)         |0~48     |1        |
+| 561|Modulation Depth Mod1 Int.     |-99~+99                     |-99~+99 |1         |
+| 562|Modulation Depth Mod2 Source   |(Mod.Source List 1)         |0~48     |1        |
+| 563|Modulation Depth Mod2 Int.     |-99~+99                     |-99~+99 |1         |
+| 564|Type                           |1/2                         |0/1      |1        |
+| 565|Wave Edge                      |0~99                        |0~99     |1        |
++----+-------------------------------+----------------------------+---------+---------+
+|    |[Cross Mod.OSC]                |                            |         |         |
+| 566|Input Select                   |OSC1(2)/SubOSC/Noise        |0~4      |1        |
+|    |                               |/Filter1/Filter2            |         |         |
+| 567|Carrier Wave                   |SAW/SQU/TRI/SIN             |0~3      |1        |
+| 568|Modulation Depth               |0~99                        |0~99     |1        |
+| 569|Modulation Depth Mod1 Source   |(Mod.Source List 1)         |0~48     |1        |
+| 570|Modulation Depth Mod1 Int.     |-99~+99                     |-99~+99 |1         |
+| 571|Modulation Depth Mod2 Source   |(Mod.Source List 1)         |0~48     |1        |
+| 572|Modulation Depth Mod2 Int.     |-99~+99                     |-99~+99 |1         |
+| 573|Wave Edge                      |0~99                        |0~99     |1        |
++----+-------------------------------+----------------------------+---------+---------+
+|    |[Sync OSC]                     |                            |         |         |
+| 574|Input Select                   |OSC1(2)/SubOSC/Noise        |0~4      |1        |
+|    |                               |/Filter1/Filter2            |         |         |
+| 575|Slave Wave                     |SAW/SQU/TRI/SIN             |0~3      |1        |
+| 576|Wave Edge                      |0~99                        |0~99     |1        |
++----+-------------------------------+----------------------------+---------+---------+
+|    |[Organ Model]                  |                            |         |         |
+| 577|(Drawbar1)                     |                            |         |         |
+| 577|Wave                           |SIN1/SIN2/SIN3/TRI          |0~3      |1        |
+| 578|Harmonics                      |1~16                        |0~15     |1        |
+| 579|Fine                           |-99~+99                     |-99~+99 |1         |
+| 580|Level                          |0~99                        |0~99     |1        |
+| 581|Level Mod Source               |(Mod.Source List 1)         |0~48     |1        |
+| 582|Level Mod Int.                 |-99~+99                     |-99~+99 |1         |
+| 583|Percussion Level               |0~99                        |0~99     |1        |
+|    |(Drawbar2)                     |                            |         |         |
+| 584|Wave                           |SIN1/SIN2/SIN3/TRI          |0~3      |1        |
+| 585|Harmonics                      |1~16                        |0~15     |1        |
+| 586|Fine                           |-99~+99                     |-99~+99 |1         |
+| 587|Level                          |0~99                        |0~99     |1        |
+| 588|Level Mod Source               |(Mod.Source List 1)         |0~48     |1        |
+| 589|Level Mod Int.                 |-99~+99                     |-99~+99 |1         |
+| 590|Percussion Level               |0~99                        |0~99     |1        |
+|    |(Drawbar3)                     |                            |         |         |
+| 591|Wave                           |SIN1/SIN2/SIN3/TRI          |0~3      |1        |
+| 592|Harmonics                      |1~16                        |0~15     |1        |
+| 593|Fine                           |-99~+99                     |-99~+99 |1         |
+| 594|Level                          |0~99                        |0~99     |1        |
+| 595|Level Mod Source               |(Mod.Source List 1)         |0~48     |1        |
+| 596|Level Mod Int.                 |-99~+99                     |-99~+99 |1         |
+| 597|Percussion Level               |0~99                        |0~99     |1        |
+|    |(Percussion)                   |                            |         |         |
+| 598|Trigger Mode                   |SINGLE/MULTI                |0/1      |1        |
+| 599|Decay                          |0~99                        |0~99     |1        |
+| 600|Percussion Level Mod Source    |(Mod.Source List 1)         |0~48     |1        |
+| 601|Percussion Level Mod Int.      |-99~+99                     |-99~+99 |1         |
++----+-------------------------------+----------------------------+---------+---------+
+|    |[E. Piano Model]               |                            |         |         |
+|    |(Hammer)                       |                            |         |         |
+| 602|Force                          |0~99                        |0~99     |1        |
+| 603|Force Velocity Curve           |OFF/0~99                    |-1/0~99 |1         |
+| 604|Width                          |0~99                        |0~99     |1        |
+| 605|Click Level                    |0~99                        |0~99     |1        |
+|    |(Tone Generator)               |                            |         |         |
+| 606|Decay                          |0~99                        |0~99     |1        |
+| 607|Release                        |0~99                        |0~99     |1        |
+| 608|Overtone Level                 |0~99                        |0~99     |1        |
+| 609|Overtone Freq                  |0~99                        |0~99     |1        |
+| 610|Overtone Decay                 |0~99                        |0~99     |1        |
+|    |(Pickup)                       |                            |         |         |
+| 611|Pickup Position                |0~99                        |0~99     |1        |
+| 612|Pickup Position Mod Source     |(Mod.Source List 1)         |0~48     |1        |
+| 613|Pickup Position Mod Int.       |-99~+99                     |-99~+99 |1         |
+|    |(Low EQ)                       |                            |         |         |
+| 614|Low EQ Freq                    |0~49                        |0~49     |1        |
+| 615|Low EQ Gain                    |-18~+18dB                   |-18~+18 |1         |
++----+-------------------------------+----------------------------+---------+---------+
+|    |[Brass Model]                  |                            |         |         |
+| 616|Instrument Type                |[*12]                       |0~5      |1        |
+| 617|Pitch Bend+                    |Smooth/Jump                 |0/1      |1(Bit0) |
+| 618|Pitch Bend-                    |Smooth/Jump                 |0/1      |^(Bit1) |
+| 619|Pressure EG                    |EG1~EG4/A.EG                |1~5      |1        |
+| 620|Pressure EG Intensity          |-99~+99                     |-99~+99 |1         |
+| 621|Pressure Mod1 Source           |(Mod.Source List 1)         |0~48     |1        |
+| 622|Pressure Mod1 Int.             |-99~+99                     |-99~+99 |1         |
+| 623|Pressure Mod2 Source           |(Mod.Source List 1)         |0~48     |1        |
+| 624|Pressure Mod2 Int.             |-99~+99                     |-99~+99 |1         |
+| 625|reserved                       |                            |         |1        |
+| 626|Lip Character                  |0~99                        |0~99     |1        |
+| 627|Lip Character Mod Source       |(Mod.Source List 1)         |0~48     |1        |
+| 628|Lip Character Mod Int.         |-99~+99                     |-99~+99 |1         |
+| 629|reserved                       |                            |         |1        |
+| 630|reserved                       |                            |         |1        |
+| 631|reserved                       |                            |         |1        |
+| 632|Bell Tone                      |0~99                        |0~99     |1        |
+| 633|Bell Resonance                 |0~99                        |0~99     |1        |
+| 634|Noise Level                    |0~99                        |0~99     |1        |
+| 635|reserved                       |                            |         |1        |
+| 636|reserved                       |                            |         |1        |
+| 637|reserved                       |                            |         |1        |
+| 638|reserved                       |                            |         |1        |
+| 639|reserved                       |                            |         |1        |
+| 640|reserved                       |                            |         |1        |
+| 641|reserved                       |                            |         |1        |
+| 642|reserved                       |                            |         |1        |
+| 643|reserved                       |                            |         |1        |
+| 644|reserved                       |                            |         |1        |
+| 645|PEQ Freq                       |0~49                        |0~49     |1        |
+| 646|PEQ Q                          |0~29                        |0~29     |1        |
+| 647|PEQ Gain                       |-18~+18dB                   |-18~+18 |1         |
+| 648|Strength                       |0~99                        |0~99     |1        |
+| 649|reserved                       |                            |         |1        |
+| 650|reserved                       |                            |         |1        |
+| 651|reserved                       |                            |         |1        |
+| 652|reserved                       |                            |         |1        |
+| 653|reserved                       |                            |         |1        |
++----+-------------------------------+----------------------------+---------+---------+
+|    |[Reed Model]                   |                            |         |         |
+| 654|Instrument Type                |[*13]                       |0~16     |1        |
+| 655|Pitch Bend+                    |Smooth/Jump                 |0/1      |1(Bit0) |
+| 656|Pitch Bend-                    |Smooth/Jump                 |0/1      |^(Bit1) |
+| 657|Pressure EG                    |EG1~EG4/A.EG                |1~5      |1        |
+| 658|Pressure EG Int.               |-99~+99                     |-99~+99 |1         |
+| 659|Pressure Mod1 Source           |(Mod.Source List 1)         |0~48     |1        |
+| 660|Pressure Mod1 Int.             |-99~+99                     |-99~+99 |1         |
+| 661|Pressure Mod2 Source           |(Mod.Source List 1)         |0~48     |1        |
+| 662|Pressure Mod2 Int.             |-99~+99                     |-99~+99 |1         |
+| 663|reserved                       |                            |         |1        |
+| 664|reserved                       |                            |         |1        |
+| 665|reserved                       |                            |         |1        |
+| 666|reserved                       |                            |         |1        |
+| 667|reserved                       |                            |         |1        |
+| 668|Noise Level                    |0~99                        |0~99     |1        |
+| 669|reserved                       |                            |         |1        |
+| 670|reserved                       |                            |         |1        |
+| 671|reserved                       |                            |         |1        |
+| 672|reserved                       |                            |         |1        |
+| 673|reserved                       |                            |         |1        |
+| 674|reserved                       |                            |         |1        |
+| 675|reserved                       |                            |         |1        |
+| 676|reserved                       |                            |         |1        |
+| 677|reserved                       |                            |         |1        |
+| 678|reserved                       |                            |         |1        |
+| 679|reserved                       |                            |         |1        |
+| 680|reserved                       |                            |         |1        |
+| 681|Reed Mod Source                |(Mod.Source List 1)         |0~48     |1        |
+| 682|Reed Mod Int.                  |-99~+99                     |-99~+99 |1         |
+| 683|HPF Fc                         |0~99                        |0~99     |1        |
+| 684|HPF Resonance                  |0~99                        |0~99     |1        |
+| 685|PEQ Freq                       |0~49                        |0~49     |1        |
+| 686|PEQ Q                          |0~29                        |0~29     |1        |
+| 687|PEQ Gain                       |-18~+18dB                   |-18~+18 |1         |
+| 688|reserved                       |                            |         |1        |
+|    |(Wave Shape)                   |                            |         |         |
+| 689|Offset                         |-99~+99                     |-99~+99 |1         |
+| 690|Table                          |Clip/Reso                   |0/1      |1(Bit7) |
+| 691|Shape                          |0~99                        |0~99     |^(Bit6~0)|
+| 692|Shape Mod Source               |(Mod.Source List 1)         |0~48     |1        |
+| 693|Shape Mod Int.                 |-99~+99                     |-99~+99 |1         |
++----+-------------------------------+----------------------------+---------+---------+
+|    |[Plucked String Model]         |                            |         |         |
+| 694|Attack Level                   |0~99                        |0~99     |1        |
+| 695|Attack Level Velocity Cntrl    |-99~+99                     |-99~+99 |1         |
+| 696|Attack Curve Up                |0~99                        |0~99     |1        |
+| 697|Attack Curve Up Veloc Cntrl    |-99~+99                     |-99~+99 |1         |
+| 698|Attack Curve Down              |0~99                        |0~99     |1        |
+| 699|Attack Curve Down Veloc Cntrl |-99~+99                      |-99~+99 |1         |
+| 700|Attack Noise Level             |0~99                        |0~99     |1        |
+| 701|Attack Noise Level Veloc Cntrl |-99~+99                     |-99~+99 |1         |
+| 702|String Position                |0~99                        |0~99     |1        |
+| 703|String Position Mod Source     |(Mod.Source List 1)         |0~48     |1        |
+| 704|String Position Mod Int.       |-99~+99                     |-99~+99 |1         |
+| 705|Dispersion                     |0~99                        |0~99     |1        |
+| 706|Dispersion Mod Source          |(Mod.Source List 1)         |0~48     |1        |
+| 707|Dispersion Mod Int.            |-99~+99                     |-99~+99 |1         |
+| 708|Damping                        |0~99                        |0~99     |1        |
+| 709|Damping Keyboard Track         |-99~+99                     |-99~+99 |1         |
+| 710|Damping Mod Source             |(Mod.Source List 1)         |0~48     |1        |
+| 711|Damping Mod Intensity          |-99~+99                     |-99~+99 |1         |
+| 712|Decay                          |0~99                        |0~99     |1        |
+| 713|Decay Keyboard Track           |-99~+99                     |-99~+99 |1         |
+| 714|Release                        |0~99                        |0~99     |1        |
+| 715|Harmonics Position             |0~99                        |0~99     |1        |
+| 716|Harmonics Mod Source           |(Mod.Source List 1)         |0~48     |1        |
+| 717|Harmonics Mod Int.             |-99~+99                     |-99~+99 |1         |
+| 718|Pickup Switch                  |OFF/ON                      |0/1      |1        |
+| 719|Pickup Position                |0~99                        |0~99     |1        |
+| 720|Pickup Position Mod Source     |(Mod.Source List 1)         |0~48     |1        |
+| 721|Pickup Position Mod Int.       |-99~+99                     |-99~+99 |1         |
+| 722|Low EQ Freq                    |0~49                        |0~49     |1        |
+| 723|Low EQ Gain                    |-18~+18dB                   |-18~+18 |1         |
+| 724|Low Boost                      |0~99                        |0~99     |1        |
++----+-------------------------------+----------------------------+---------+---------+
+|    |[Bowed String Model]           |                            |         |         |
+|    |(Bow Speed)                    |                            |         |         |
+| 725|Bow Speed EG                   |EG1~EG4/A.EG                |1~5      |1        |
+| 726|Bow Speed EG Int.              |-99~+99                     |-99~+99 |1         |
+| 727|Bow Speed Mod1 Source          |(Mod.Source List 1)         |0~48     |1        |
+| 728|Bow Speed Mod1 Int.            |-99~+99                     |-99~+99 |1         |
+| 729|Bow Speed Mod2 Source          |(Mod.Source List 1)         |0~48     |1        |
+| 730|Bow Speed Mod2 Int.            |-99~+99                     |-99~+99 |1         |
+| 731|Bow Differential               |OFF/ON                      |0/1      |1        |
+|    |(Pressure)                     |                            |         |         |
+| 732|Pressure EG                    |EG1~EG4/A.EG                |1~5      |1        |
+| 733|Pressure EG Int.               |-99~+99                     |-99~+99 |1         |
+| 734|Pressure Mod Source            |(Mod.Source List 1)         |0~48     |1        |
+| 735|Pressure Mod Int.              |-99~+99                     |-99~+99 |1         |
+| 736|Rosin Amount                   |0~99                        |0~99     |1        |
+|    |(String Position)              |                            |         |         |
+| 737|String Position                |0~99                        |0~99     |1        |
+| 738|String Position Mod Source     |(Mod.Source List 1)         |0~48     |1        |
+| 739|String Position Mod Int.       |-99~+99                     |-99~+99 |1         |
+|    |(String Character)             |                            |         |         |
+| 740|Damping                        |0~99                        |0~99     |1        |
+| 741|Damping Keyboard Trk Key       |C-1~G9                      |0~127    |1        |
+| 742|Damping Keyboard Trk Low Int. |-99~+99                      |-99~+99 |1         |
+| 743|Damping Keyboard Trk High Int. |-99~+99                     |-99~+99 |1         |
+| 744|Damping Mod Source             |(Mod.Source List 1)         |0~48     |1        |
+| 745|Damping Mod Int.               |-99~+99                     |-99~+99 |1         |
+| 746|Dispersion                     |0~99                        |0~99     |1        |
+| 747|Dispersion Mod Source          |(Mod.Source List 1)         |0~48     |1        |
+| 748|Dispersion Mod Int.            |-99~+99                     |-99~+99 |1         |
+|    |(Reflection)                   |                            |         |         |
+| 749|Reflection                     |0~99                        |0~99     |1        |
+| 750|Reflection Mod Source          |(Mod.Source List 1)         |0~48     |1        |
+| 751|Reflection Mod Int.            |-99~+99                     |-99~+99 |1         |
+|    |(PEQ)                          |                            |         |         |
+| 752|PEQ Freq                       |0~49                        |0~49     |1        |
+| 753|PEQ Q                          |0~29                        |0~29     |1        |
+| 754|PEQ Gain                       |-18dB~+18dB                 |-18~+18 |1         |
++====+===============================+============================+=========+=========+
+
+      Effect 1&2 Parameters
++====+===============================+============================+=========+=========+
+|    |[Over Drive]                   |                            |         |         |
+| 800|Mode                           |OD/DIST                     |0/1      |1        |
+| 801|Drive                          |0~99                        |0~99     |1        |
+| 802|Output Level                   |0~99                        |0~99     |1        |
+| 803|Pre Low Cut                    |0~99                        |0~99     |1        |
+| 804|Low EQ Freq                    |20.00~1.40kHz               |0~49     |1        |
+| 805|Low EQ Q                       |0.5~10.0                    |0~95     |1        |
+| 806|Low EQ Gain                    |-18.0~+18.0dB               |-36~+36 |1         |
+| 807|Mid Low EQ Freq                |50.00~14.4kHz               |0~49     |1        |
+| 808|Mid Low EQ Q                   |0.5~10.0                    |0~95     |1        |
+| 809|Mid Low EQ Gain                |-18.0~+18.0dB               |-36~+36 |1         |
+| 810|Mid High EQ Freq               |200.0~14.0kHz               |0~49     |1        |
+| 811|Mid High EQ Q                  |0.5~10.0                    |0~95     |1        |
+| 812|Mid High EQ Gain               |-18.0~+18.0dB               |-36~+36 |1         |
+| 813|High EQ Freq                   |500.0~21.8kHz               |0~49     |1        |
+| 814|High EQ Q                      |0.5~10.0                    |0~95     |1        |
+| 815|High EQ Gain                   |-18.0~+18.0dB               |-36~+36 |1         |
+| 816|Effect Balance                 |0~100%                      |0~100    |1        |
+| 817|Effect Balance Mod Source      |(Mod.Source List 2)         |0~45     |1        |
+| 818|Effect Balance Mod Int.        |-99~+99                     |-99~+99 |1         |
++----+-------------------------------+----------------------------+---------+---------+
+|    |[Compressor]                   |                            |         |         |
+| 819|Sensitivity                    |1~99                        |1~99     |1        |
+| 820|Attack                         |1~99                        |1~99     |1        |
+| 821|EQ Trim                        |0~99                        |0~99     |1        |
+| 822|Pre Low EQ Gain                |-18.0~+18.0dB               |-36~+36 |1         |
+| 823|Pre High EQ Gain               |-18.0~+18.0dB               |-36~+36 |1         |
+| 824|Output Level                   |0~99                        |0~99     |1        |
+| 825|Effect Balance                 |0~100%                      |0~100    |1        |
+| 826|Effect Balance Mod Source      |(Mod.Source List 2)         |0~45     |1        |
+| 827|Effect Balance Mod Int.        |-99~+99                     |-99~+99 |1         |
++----+-------------------------------+----------------------------+---------+---------+
+|    |[4 Band PEQ]                   |                            |         |         |
+| 828|Trim                           |0~99                        |0~99     |1        |
+| 829|Low EQ Type                    |PEAKING/SHELVING            |0/1      |1        |
+| 830|Low EQ Freq                    |20.00~1.40kHz               |0~49     |1        |
+| 831|Low EQ Q                       |0.5~10.0                    |0~95     |1        |
+| 832|Low EQ Gain                    |-18.0~+18.0dB               |-36~+36 |1         |
+| 833|Mid Low EQ Freq                |50.00~14.4kHz               |0~49     |1        |
+| 834|Mid Low EQ Q                   |0.5~10.0                    |0~95     |1        |
+| 835|Mid Low EQ Gain                |-18.0~+18.0dB               |-36~+36 |1         |
+| 836|Mid Low EQ Gain Mod Source     |(Mod.Source List 2)         |0~45     |1        |
+| 837|Mid Low EQ Gain Mod Int.       |-18.0~+18.0dB               |-36~+36 |1         |
+| 838|Mid High EQ Freq               |200.0~14.0kHz               |0~49     |1        |
+| 839|Mid High EQ Q                  |0.5~10.0                    |0~95     |1        |
+| 840|Mid High EQ Gain               |-18.0~+18.0dB               |-36~+36 |1         |
+| 841|High EQ Type                   |PEAKING/SHELVING            |0/1      |1        |
+| 842|High EQ Freq                   |500.0~21.8kHz               |0~49     |1        |
+| 843|High EQ Q                      |0.5~10.0                    |0~95     |1        |
+| 844|High EQ Gain                   |-18.0~+18.0dB               |-36~+36 |1         |
+| 845|Effect Balance                 |0~100%                      |0~100    |1        |
+| 846|Effect Balance Mod Source      |(Mod.Source List 2)         |0~45     |1        |
+| 847|Effect Balance Mod Int.        |-99~+99                     |-99~+99 |1         |
++----+-------------------------------+----------------------------+---------+---------+
+|    |[Wah]                          |                            |         |         |
+| 848|Frequency Bottom               |0~99                        |0~99     |1        |
+| 849|Frequency Top                  |0~99                        |0~99     |1        |
+| 850|Sweep Mode                     |AUTO/MOD.SOURCE             |0/1      |1        |
+| 851|Sweep Source                   |(Mod.Source List 2)         |0~45     |1        |
+| 852|Sweep Response                 |0~99                        |0~99     |1        |
+| 853|Envelope Sens                  |0~99                        |0~99     |1        |
+| 854|Envelope Shape                 |-99~+99                     |-99~+99 |1         |
+| 855|Resonance                      |0~99                        |0~99     |1        |
+| 856|Filter Mode                    |BPF/LPF                     |0/1      |1        |
+| 857|Effect Balance                 |0~100%                      |0~100    |1        |
+| 858|Effect Balance Mod Source      |(Mod.Source List 2)         |0~45     |1        |
+| 859|Effect Balance Mod Int.        |-99~+99                     |-99~+99 |1         |
++----+-------------------------------+----------------------------+---------+---------+
+|    |[Exciter]                      |                            |         |         |
+| 860|Blend                          |-99~+99                     |-99~+99 |1         |
+| 861|Blend Mod Source               |(Mod.Source List 2)         |0~45     |1        |
+| 862|Blend Mod Int.                 |-99~+99                     |-99~+99 |1         |
+| 863|Emphatic PoInt.                |0~99                        |0~99     |1        |
+| 864|Emphatic PoInt.Mod Source      |(Mod.Source List 2)         |0~45     |1        |
+| 865|Emphatic PoInt.Mod Int.        |-99~+99                     |-99~+99 |1         |
+| 866|Pre EQ Input Trim              |0~99                        |0~99     |1        |
+| 867|Pre Low EQ Gain                |-18.0~+18.0dB               |-36~+36 |1         |
+| 868|Pre High EQ Gain               |-18.0~+18.0dB               |-36~+36 |1         |
+| 869|Effect Balance                 |0~100%                      |0~100    |1        |
+| 870|Effect Balance Mod Source      |(Mod.Source List 2)         |0~45     |1        |
+| 871|Effect Balance Mod Int.        |-99~+99                     |-99~+99 |1         |
++----+-------------------------------+----------------------------+---------+---------+
+|    |[Decimator]                    |                            |         |         |
+| 872|Pre LPF                        |OFF/ON                      |0/1      |1        |
+| 873|Sampling Frequency             |1.0k~24.0kHz                |5~120    |1        |
+| 874|Sampling Frequency Mod Source |(Mod.Source List 2)          |0~45     |1        |
+| 875|Sampling Frequency Mod Int.    |-24.0k~+24.0kHz             |-120~+120|1        |
+| 876|Resolution                     |4bit~24bit                  |4~24     |1        |
+| 877|High Damp                      |0~99                        | 0~99    |1        |
+| 878|Output Level                   |0~99                        |0~99     |1        |
+| 879|Effect Balance                 |0~100%                      |0~100    |1        |
+| 880|Effect Balance Mod Source      |(Mod.Source List 2)         |0~45     |1        |
+| 881|Effect Balance Mod Int.        |-99~+99                     |-99~+99 |1         |
++----+-------------------------------+----------------------------+---------+---------+
+|    |[Chorus]                       |                            |         |         |
+| 882|Delay Time                     |0.0~50.0msec                |0~140    |1        |
+| 883|LFO Wave Form                  |TRI/SIN                     |0/1      |1        |
+| 884|LFO Frequency                  |00.04~20.00Hz               |1~115    |1        |
+| 885|LFO Frequency Mod Source       |(Mod.Source List 2)         |0~45     |1        |
+| 886|LFO Frequency Mod Int.         |-20.00~+20.00Hz             |-115~+115|1        |
+| 887|MIDI Sync                      |OFF/ON                      |0/1      |1(Bit7) |
+| 888|MIDI Sync Base                 |~8T~                        |0~7      |^(Bit4~6)|
+| 889|MIDI Sync Time                 |1~16                        |0~15     |^(Bit0~3)|
+| 890|Depth                          |0~99                        |0~99     |1        |
+| 891|Depth Mod Source               |(Mod.Source List 2)         |0~45     |1        |
+| 892|Depth Mod Int.                 |-99~+99                     |-99~+99 |1         |
+| 893|Pre EQ Input Trim              |0~99                        |0~99     |1        |
+| 894|Pre Low EQ Gain                |-18.0~+18.0dB               |-36~+36 |1         |
+| 895|Pre High EQ Gain               |-18.0~+18.0dB               |-36~+36 |1         |
+| 896|Chorus Output Phase            |+/-/+-                      |0/1/2    |1        |
+| 897|Effect Balance                 |0~100%                      |0~100    |1        |
+| 898|Effect Balance Mod Source      |(Mod.Source List 2)         |0~45     |1        |
+| 899|Effect Balance Mod Int.        |-99~+99                     |-99~+99 |1         |
++----+-------------------------------+----------------------------+---------+---------+
+|    |[Flanger]                      |                            |         |         |
+| 900|Delay Time                     |0.0~50.0msec                |0~140    |1        |
+| 901|LFO Wave Form                  |TRI/SIN                     |0/1      |1        |
+| 902|LFO Shape                      |-99~+99                     |-99~+99 |1         |
+| 903|LFO Frequency                  |00.04~20.00Hz               |1~115    |1        |
+| 904|LFO Frequency Mod Source       |(Mod.Source List 2)         |0~45     |1        |
+| 905|LFO Frequency Mod Int.         |-20.00~+20.00Hz             |-115~+115|1        |
+| 906|MIDI Sync                      |OFF/ON                      |0/1      |1(Bit7) |
+| 907|MIDI Sync Base                 |~8T~                        |0~7      |^(Bit4~6)|
+| 908|MIDI Sync Time                 |1~16                        |0~15     |^(Bit0~3)|
+| 909|Depth                          |0~99                        |0~99     |1        |
+| 910|Feedback                       |-99~+99                     |-99~+99 |1         |
+| 911|High Damp                      |0~99                        |0~99     |1        |
+| 912|Flanger Output Phase           |+/-/+-                      |0/1/2    |1        |
+| 913|Effect Balance                 |0~100%                      |0~100    |1        |
+| 914|Effect Balance Mod Source      |(Mod.Source List 2)         |0~45     |1        |
+| 915|Effect Balance Mod Int.        |-99~+99                     |-99~+99 |1         |
++----+-------------------------------+----------------------------+---------+---------+
+|    |[Phaser]                       |                            |         |         |
+| 916|LFO Wave Form                  |TRI/SIN                     |0/1      |1        |
+| 917|LFO Shape                      |-99~+99                     |-99~+99 |1         |
+| 918|LFO Frequency                  |00.04~20.00Hz               |1~115    |1        |
+| 919|LFO Frequency Mod Source       |(Mod.Source List 2)         |0~45     |1        |
+| 920|LFO Frequency Mod Int.         |-20.00~+20.00Hz             |-115~+115|1        |
+| 921|MIDI Sync                      |OFF/ON                      |0/1      |1(Bit7) |
+| 922|MIDI Sync Base                 |~8T~                        |0~7      |^(Bit4~6)|
+| 923|MIDI Sync Time                 |1~16                        |0~15     |^(Bit0~3)|
+| 924|Manual                         |0~99                        |0~99     |1        |
+| 925|Depth                          |0~99                        |0~99     |1        |
+| 926|Resonance                      |-99~+99                     |-99~+99 |1         |
+| 927|High Damp                      |0~99                        |0~99     |1        |
+| 928|Phaser Output Phase            |+/-/+-                      |0/1/2    |1        |
+| 929|Effect Balance                 |0~100%                      |0~100    |1        |
+| 930|Effect Balance Mod Source      |(Mod.Source List 2)         |0~45     |1        |
+| 931|Effect Balance Mod Int.        |-99~+99                     |-99~+99 |1         |
++----+-------------------------------+----------------------------+---------+---------+
+|    |[Small Rotary SP]              |                            |         |         |
+| 932|Speed                          |SLOW/FAST                   |0/1      |1        |
+| 933|Speed SW                       |(Mod.Source List 2)         |0~45     |1        |
+| 934|Horn Acceleration              |0~99                        |0~99     |1        |
+| 935|Horn Rate                      |0~99                        |0~99     |1        |
+| 936|Mic Distance                   |0~99                        |0~99     |1        |
+| 937|Horn/Rotor Balance             |0~99                        |0~99     |1        |
+| 938|Effect Balance                 |0~100%                      |0~100    |1        |
+| 939|Effect Balance Mod Source      |(Mod.Source List 2)         |0~45     |1        |
+| 940|Effect Balance Mod Int.        |-99~+99                     |-99~+99 |1         |
++----+-------------------------------+----------------------------+---------+---------+
+|    |[Delay]                        |                            |         |         |
+| 941|Input Level Mod Source         |(Mod.Source List 2)         |0~45     |1        |
+| 942|Input Level Mod Int.           |-99~+99                     |-99~+99 |1         |
+| 943|Delay Time                     |0~680msec                   |0~251    |1        |
+| 944|Feedback                       |-99~+99                     |-99~+99 |1         |
+| 945|Feedback Mod Source            |(Mod.Source List 2)         |0~45     |1        |
+| 946|Feedback Mod Int.              |-99~+99                     |-99~+99 |1         |
+| 947|Low Damp                       |0~99                        |0~99     |1        |
+| 948|High Damp                      |0~99                        |0~99     |1        |
+| 949|Effect Balance                 |0~100%                      |0~100    |1        |
+| 950|Effect Balance Mod Source      |(Mod.Source List 2)         |0~45     |1        |
+| 951|Effect Balance Mod Int.        |-99~+99                     |-99~+99 |1         |
++----+-------------------------------+----------------------------+---------+---------+
+|    |[Talking Modulator]            |                            |         |         |
+| 952|Control Mode                   |Manual/MOD.SOURCE           |0/1      |1        |
+| 953|Manual Control                 |0~99                        |0~99     |1        |
+| 954|Control Source                 |(Mod.Source List 2)         |0~45     |1        |
+| 955|Voice Top                      |A/I/U/E/O                   |0~4      |1        |
+| 956|Voice Center                   |A/I/U/E/O                   |0~4      |1        |
+| 957|Voice Bottom                   |A/I/U/E/O                   |0~4      |1        |
+| 958|Formant Shift                  |-99~+99                     |-99~+99 |1         |
+| 959|Resonance                      |0~99                        |0~99     |1        |
+| 960|Effect Balance                 |0~100%                      |0~100    |1        |
+| 961|Effect Balance Mod Source      |(Mod.Source List 2)         |0~45     |1        |
+| 962|Effect Balance Mod Int.        |-99~+99                     |-99~+99 |1         |
++----+-------------------------------+----------------------------+---------+---------+
+|    |[Multitap Delay]               |                            |         |         |
+| 963|Type                           |Normal/Cross1/Cross2/Pan1   |0~4      |1        |
+|    |                               |/Pan2                       |         |         |
+| 964|Input Level Mod Source         |(Mod.Source List 2)         |0~45     |1        |
+| 965|Input Level Mod Int.           |-99~+99                     |-99~+99 |1         |
+| 966|Tap1 Time                      |0~680msec                   |0~251    |1        |
+| 967|Tap1 Level                     |0~99                        |0~99     |1        |
+| 968|Tap2 Time                      |0~680msec                   |0~251    |1        |
+| 969|Feedback                       |-99~+99                     |-99~+99 |1         |
+| 970|Feedback Mod Source            |(Mod.Source List 2)         |0~45     |1        |
+| 971|Feedback Mod Int.              |-99~+99                     |-99~+99 |1         |
+| 972|Low Damp                       |0~99                        |0~99     |1        |
+| 973|High Damp                      |0~99                        |0~99     |1        |
+| 974|Spread                         |-99~+99                     |-99~+99 |1         |
+| 975|Spread Mod Source              |(Mod.Source List 2)         |0~45     |1        |
+| 976|Spread Mod Int.                |-99~+99                     |-99~+99 |1         |
+| 977|Effect Balance                 |0~100%                      |0~100    |1        |
+| 978|Effect Balance Mod Source      |(Mod.Source List 2)         |0~45     |1        |
+| 979|Effect Balance Mod Int.        |-99~+99                     |-99~+99 |1         |
++----+-------------------------------+----------------------------+---------+---------+
+|    |[Ensemble]                     |                            |         |         |
+| 980|Speed                          |0~99                        |0~99     |1        |
+| 981|Speed Mod Source               |(Mod.Source List 2)         |0~45     |1        |
+| 982|Speed Mod Int.                 |-99~+99                     |-99~+99 |1         |
+| 983|Shimmer                        |0~99                        |0~99     |1        |
+| 984|Depth                          |0~99                        |0~99     |1        |
+| 985|Depth Mod Source               |(Mod.Source List 2)         |0~45     |1        |
+| 986|Depth Mod Int.                 |-99~+99                     |-99~+99 |1         |
+| 987|Effect Balance                 |0~100%                      |0~100    |1        |
+| 988|Effect Balance Mod Source      |(Mod.Source List 2)         |0~45     |1        |
+| 989|Effect Balance Mod Int.        |-99~+99                     |-99~+99 |1         |
++----+-------------------------------+----------------------------+---------+---------+
+|    |[Rotary Speaker]               |                            |         |         |
+| 990|Speed                          |SLOW/FAST                   |0/1      |1        |
+| 991|Speed SW                       |(Mod.Source List 2)         |0~45     |1        |
+| 992|Mode                           |ROTATE/STOP                 |0/1      |1        |
+| 993|Mode SW                        |(Mod.Source List 2)         |0~45     |1        |
+| 994|Rotor Acceleration             |0~99                        |0~99     |1        |
+| 995|Rotor Rate                     |0~99                        |0~99     |1        |
+| 996|Horn Acceleration              |0~99                        |0~99     |1        |
+| 997|Horn Rate                      |0~99                        |0~99     |1        |
+| 998|Mic Distance                   |0~99                        |0~99     |1        |
+| 999|Mic Spread                     |0~99                        |0~99     |1        |
+|1000|Horn/Rotor Balance             |0~99                        |0~99     |1        |
+|1001|Effect Balance                 |0~100%                      |0~100    |1        |
+|1002|Effect Balance Mod Source      |(Mod.Source List 2)         |0~45     |1        |
+|1003|Effect Balance Mod Int.        |-99~+99                     |-99~+99 |1         |
++====+===============================+============================+=========+=========+
+
+      Master Effect Parameters
++====+===============================+============================+=========+=========+
+|    |[Stereo Delay]                 |                            |         |         |
+|1004|Type                           |Stereo/Cross                |0/1      |1        |
+|1005|Input Level Mod Source         |(Mod.Source List 2)         |0~45     |1        |
+|1006|Input Level Mod Int.           |-99~+99                     |-99~+99 |1         |
+|1007|Left Delay Time                |0~680msec                   |0~251    |1        |
+|1008|Right Delay Time               |0~680msec                   |0~251    |1        |
+|1009|Feedback(L)                    |-99~+99                     |-99~+99 |1         |
+|1010|Feedback(R)                    |-99~+99                     |-99~+99 |1         |
+|1011|Feedback Mod Source            |(Mod.Source List 2)         |0~45     |1        |
+|1012|Feedback Mod Int.              |-99~+99                     |-99~+99 |1         |
+|1013|Low Damp                       |0~99                        |0~99     |1        |
+|1014|High Damp                      |0~99                        |0~99     |1        |
+|1015|Effect Balance                 |0~100%                      |0~100    |1        |
+|1016|Effect Balance Mod Source      |(Mod.Source List 2)         |0~45     |1        |
+|1017|Effect Balance Mod Int.        |-99~+99                     |-99~+99 |1         |
++----+-------------------------------+----------------------------+---------+---------+
+|    |[Reverb-Hall]                  |                            |         |         |
+|1018|Reverb Time                    |0.1~10.0sec                 |1~100    |1        |
+|1019|Pre Delay                      |0~200msec                   |0~200    |1        |
+|1020|Pre Delay Thru Level           |0~99                        |0~99     |1        |
+|1021|High Damp                      |0~99                        |0~99     |1        |
+|1022|Pre EQ Trim                    |0~99                        |0~99     |1        |
+|1023|Pre Low EQ Gain                |-18.0~+18.0dB               |-36~+36 |1         |
+|1024|Pre High EQ Gain               |-18.0~+18.0dB               |-36~+36 |1         |
+|1025|Effect Balance                 |0~100%                      |0~100    |1        |
+|1026|Effect Balance Mod Source      |(Mod.Source List 2)         |0~45     |1        |
+|1027|Effect Balance Mod Int.        |-99~+99                     |-99~+99 |1         |
++----+-------------------------------+----------------------------+---------+---------+
+|    |[Reverb-Room]                  |                            |         |         |
+|1028|Reverb Time                    |0.1~3.0sec                  |1~30     |1        |
+|1029|Pre Delay                      |0~200msec                   |0~200    |1        |
+|1030|Pre Delay Thru Level           |0~99                        |0~99     |1        |
+|1031|High Damp                      |0~99                        |0~99     |1        |
+|1032|ER. Level                      |0~99                        |0~99     |1        |
+|1033|Reverb Level                   |0~99                        |0~99     |1        |
+|1034|Pre EQ Trim                    |0~99                        |0~99     |1        |
+|1035|Pre Low EQ Gain                |-18.0~+18.0dB               |-36~+36 |1         |
+|1036|Pre High EQ Gain               |-18.0~+18.0dB               |-36~+36 |1         |
+|1037|Effect Balance                 |0~100%                      |0~100    |1        |
+|1038|Effect Balance Mod Source      |(Mod.Source List 2)         |0~45     |1        |
+|1039|Effect Balance Mod Int.        |-99~+99                     |-99~+99 |1         |
++====+===============================+============================+=========+=========+
+
+* The format of a program parameter ID for the Parameter Change Message.
+
+ +---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+ | E | E | E | I | I | I | I | I | I | I | I | I | I | I |
+ +---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+ <== ExID ==>:<============= Parameter ID ===============>
+
+ +----+--------------- ---------------------+
+ |ExID|                                     |
+ +----+--------------- ---------------------+
+ |   0|(Identified by the Paramter ID only) |
+ |   1|OSC1 setting                         |
+ |   2|OSC2 setting                         |
+ |   3|Effect1 setting                      |
+ |   4|Effect2 setting                      |
+ |   5|Master Effect setting                |
+ +----+--------------- ---------------------+
+[*1]:Program Category                  [*2]:Scale Type
++--+-------------------------------+   +--+-------------------------------+
+|ID|            Name               |   |ID|            Name               |
++--+-------------------------------+   +--+-------------------------------+
+| 0|Synth-Hard                     |   | 0|Equal Temperament              |
+| 1|Synth-Soft                     |   | 1|Pure Major Temperament         |
+| 2|Synth-Lead                     |   | 2|Pure Minor Temperament         |
+| 3|Synth-Motion                   |   | 3|Arabic Temperament             |
+| 4|Synth-Bass                     |   | 4|Pythagorean                    |
+| 5|E.Piano                        |   | 5|Werckmeister                   |
+| 6|Organ                          |   | 6|Kirnberger                     |
+| 7|Keyboard                       |   | 7|Slendro                        |
+| 8|Bell                           |   | 8|Pelog                          |
+| 9|Strings                        |   | 9|User Scale1                    |
+|10|Bad/Choir                      |   |10|User Scale2                    |
+|11|Brass                          |   |10|User Scale2                    |
+|12|Reed/Wind                      |   +--+-------------------------------+
+|13|Guitar/Plucked                 |
+|14|Bass                           |
+|15|Percussive                     |
+|16|Arpeggio                       |
+|17|SFX/Other                      |
++--+-------------------------------+
+
+[*3]:LFO Wave Form                     [*4]:Oscillator Type
++--+-------------------------------+   +--+-------------------------------+
+|ID|            Name               |   |ID|            Name               |
++--+-------------------------------+   +--+-------------------------------+
+| 0|Triangle '0                    |   | 0|Standard OSC                   |
+| 1|Triangle '90                   |   | 1|Comb Filter OSC                |
+| 2|Tri Random                     |   | 2|VPM OSC                        |
+| 3|Sine                           |   | 3|Resonance OSC                  |
+| 4|Saw Up '0                      |   | 4|Ring Modulation OSC            |
+| 5|Saw Up '180                    |   | 5|Cross Modulation OSC           |
+| 6|Saw Down '0                    |   | 6|Sync OSC                       |
+| 7|Saw Down '180                  |   | 7|Organ Model                    |
+| 8|Square                         |   | 8|Electric Piano Model           |
+| 9|Random(S/H)                    |   | 9|Brass Model                    |
+|10|Random(Vector)                 |   |10|Reed Model                     |
+|11|Step Tri 4                     |   |11|Plucked String Model           |
+|12|Step Tri 6                     |   |12|Bowed String Model             |
+|13|Step Saw 4                     |   +--+-------------------------------+
+|14|Step Saw 6                     |
+|15|Exp Tri                        |
+|16|Exp Saw Up                     |
+|17|Exp Saw Down                   |
++--+-------------------------------+
+
+[*5]:Effect1&2 Type                    [*6]:Master Effect Type
++--+-------------------------------+   +--+-------------------------------+
+|ID|            Name               |   |ID|            Name               |
++--+-------------------------------+   +--+-------------------------------+
+| 0|Overdrive                      |   | 0|Stereo Delay                   |
+| 1|Compressor                     |   | 1|Reverb-Hall                    |
+| 2|Parametric EQ                  |   | 2|Reverb-Room                    |
+| 3|Wah                            |   +--+-------------------------------+
+| 4|Exciter                        |
+| 5|Decimator                      |
+| 6|Chorus                         |
+| 7|Flanger                        |
+| 8|Phaser                         |
+| 9|Rotary Speaker-small           |
+|10|Delay-mono                     |
+|11|Talking Modulator    (FX1 only)|
+|12|Multitap Delay       (FX1 only)|
+|13|Ensemble             (FX1 only)|
+|14|Rotary Speaker-Large (FX1 only)|
++--+-------------------------------+
+
+[*7]:Assignable SW1 Function List      [*8]:Assignable SW2 Function List
++--+-------------------------------+   +--+-------------------------------+
+|ID|            Name               |   |ID|            Name               |
++--+-------------------------------+   +--+-------------------------------+
+| 0|Mod.SW1(CC#80)                 |   | 0|Mod.SW2(CC#81)                 |
+| 1|Master FX OFF/ON(CC#92)        |   | 1|Master FX OFF/ON(CC#92)        |
+| 2|FX1 OFF/ON(CC#94)              |   | 2|FX1 OFF/ON(CC#94)              |
+| 3|FX2 OFF/ON(CC#95)              |   | 3|FX2 OFF/ON(CC#95)              |
+| 4|Octave Up                      |   | 4|Oct Up                         |
+| 5|Octave Down                    |   | 5|Oct Down                       |
+| 6|Mono SW(CC#18)                 |   | 6|Mono SW(CC#18)                 |
+| 7|Unison OFF/ON(CC#75)           |   | 7|Unison OFF/ON(CC#75)           |
++--+-------------------------------+   +--+-------------------------------+
+
+[*9]:Assignable F.SW Function List     [*10]:Assignable Pedal Function List
++--+-------------------------------+   +--+-------------------------------+
+|ID|            Name               |   |ID|            Name               |
++--+-------------------------------+   +--+-------------------------------+
+| 0|Foot SW(CC#82)                 |   | 0|t Pedal(CC#4)                  |
+| 1|MIDI Damper(CC#64)             |   | 1|I Breath Control(CC#2)         |
+| 2|MIDI Portamento SW(CC#65)      |   | 2|I Portamento Time(CC#5)        |
+| 3|MIDI Sostenuto(CC#66)          |   | 3|I Volume(CC#7)                 |
+| 4|Master FX OFF/ON(CC#92)        |   | 4|I Panpot(CC#10)                |
+| 5|FX1 OFF/ON(CC#94)              |   | 5|I Expression(CC#11)            |
+| 6|FX2 OFF/ON(CC#95)              |   +--+-------------------------------+
+| 7|Oct Up                         |
+| 8|Oct Down                       |
+| 9|Mono SW(CC#18)                 |
+|10|Unison OFF/ON(CC#75)           |
+|11|Arpeggio OFF/ON                |
+|12|Pad Hold                       |
++--+-------------------------------+
+
+[*11]:See the PE(Performancd Editor) List.
+
+[*12]:Brass Model Instulment Types     [*13]:Reed Model Instulment Types
++--+-------------------------------+   +--+-------------------------------+
+|ID|            Name               |   |ID|            Name               |
++--+-------------------------------+   +--+-------------------------------+
+| 0|Brass 1                        |   | 0|Hard Sax 1                     |
+| 1|Brass 2                        |   | 1|Hard Sax 2                     |
+| 2|Brass 3                        |   | 2|Hard Sax 3                     |
+| 3|Horn 1                         |   | 3|Soft Sax 1                     |
+| 4|Horn 2                         |   | 4|Soft Sax 2                     |
+| 5|ReedBrass                      |   | 5|DoubleReed 1                   |
++--+-------------------------------+   | 6|DoubleReed 2                   |
+                                       | 7|Bassoon                        |
+                                       | 8|Clarinet                       |
+                                       | 9|Flute 1                        |
+                                       |10|Flute 2                        |
+                                       |11|PanFlute                       |
+                                       |12|Ocarina                        |
+                                       |13|Shakuhachi                     |
+                                       |14|Harmonica 1                    |
+                                       |15|Harmonica 2                    |
+                                       |16|ReedSynth                      |
+                                       +--+-------------------------------+
+    Modulation Source List 1               Modulation Source List 2
++--+-------------------------------+   +--+-------------------------------+
+|ID|     Modulation Sources        |   |ID|      Modulation Sources       |
++--+-------------------------------+   +--+-------------------------------+
+| 0|Off                            |   | 0|Off                            |
+| 1|EG1                            |   |11|Note[Linear]                   |
+| 2|EG2                            |   |12|Note[Exp]                      |
+| 3|EG3                            |   |13|Note Split[High]               |
+| 4|EG4                            |   |14|Note Split[Low]                |
+| 5|Amp EG                         |   |15|Velocity[Soft]                 |
+| 6|LFO1                           |   |16|Velocity[Medium]               |
+| 7|LFO2                           |   |17|Velocity[Hard]                 |
+| 8|LFO3                           |   |18|Pitch Bend                     |
+| 9|LFO4                           |   |19|After Touch                    |
+|10|Portamento                     |   |20|Modulation Wheel(CC#1)         |
+|11|Note[Linear]                   |   |21|ATouch+Mod.Wheel               |
+|12|Note[Exp]                      |   |22|ATHalf+Mod.Wheel               |
+|13|Note Split[High]               |   |23|X[+/-](CC#16)                  |
+|14|Note Split[Low]                |   |24|X[+](CC#16)                    |
+|15|Velocity[Soft]                 |   |25|X[-](CC#16)                    |
+|16|Velocity[Medium]               |   |26|Y[+/-](CC#17)                  |
+|17|Velocity[Hard]                 |   |27|Y[+](CC#17)                    |
+|18|Pitch Bend                     |   |28|Y[-](CC#17)                    |
+|19|After Touch                    |   |29|Knob1(CC#19)                   |
+|20|Modulation Wheel(CC#1)         |   |30|Knob2(CC#20)                   |
+|21|ATouch+Mod.Wheel               |   |31|Knob3(CC#21)                   |
+|22|ATHalf+Mod.Wheel               |   |32|Knob4(CC#22)                   |
+|23|X[+/-](CC#16)                  |   |33|Knob5(CC#23)                   |
+|24|X[+](CC#16)                    |   |34|Mod.SW1(CC#80)                 |
+|25|X[-](CC#16)                    |   |35|Mod.SW2(CC#81)                 |
+|26|Y[+/-](CC#17)                  |   |36|Foot SW(CC#82)                 |
+|27|Y[+](CC#17)                    |   |37|Foot Pedal(CC#4)               |
+|28|Y[-](CC#17)                    |   |38|Damper(CC#64)                  |
+|29|Knob1(CC#19)                   |   |39|Sostenuto(CC#66)               |
+|30|Knob2(CC#20)                   |   |40|MIDI Breath Control(CC#2)      |
+|31|Knob3(CC#21)                   |   |41|MIDI Volume(CC#7)              |
+|32|Knob4(CC#22)                   |   |42|MIDI Panpot(CC#10)             |
+|33|Knob5(CC#23)                   |   |43|MIDI Expression(CC#11)         |
+|34|Mod.SW1(CC#80)                 |   |44|MIDI Portamento Time(CC#5)     |
+|35|Mod.SW2(CC#81)                 |   |45|MIDI Portamento SW(CC#65)      |
+|36|Foot SW(CC#82)                 |   +--+-------------------------------+
+|37|Foot Pedal(CC#4)               |
+|38|Damper(CC#64)                  |
+|39|Sostenuto(CC#66)               |
+|40|MIDI Breath Control(CC#2)      |
+|41|MIDI Volume(CC#7)              |
+|42|MIDI Panpot(CC#10)             |
+|43|MIDI Expression(CC#11)         |
+|44|MIDI Portamento Time(CC#5)     |
+|45|MIDI Portamento SW(CC#65)      |
+|46|Master FX OFF/ON(CC#92)        |
+|47|FX1 OFF/ON(CC#94)              |
+|48|FX2 OFF/ON(CC#95)              |
++--+-------------------------------+
+           KORG Z1 - Global Parameters                        Revision 1.0 (1997.9.12)
++====+===============================+============================+=========+=========+
+| ID |      Parameter Name           |         Display            | Value | Size      |
++====+===============================+============================+=========+=========+
+|   1|Master Tune                    |430.0Hz~450.0Hz             |-100~+100|1        |
+|   2|Transpose                      |-12~+12                     |-12~+12 |1         |
+|   3|Transpose Position             |POST_KBD/PRE_TG             |0/1      |1        |
+|   4|Velocity Curve                 |CURVE1~13                   |0~12     |1(Bit3~7)|
+|   5|After Touch Curve              |CURVE1~8                    |0~7      |^(Bit0~2)|
+|   6|After Touch Sensitivity        |0~99                        |0~99     |1        |
+|   7|Output Mode                    |Stereo/Monaural             |0/1      |1        |
+|   8|reserved                       |                            |         |1        |
+|   9|Damper Polarity                |+/-                         |0~1      |1(Bit7) |
+| 10|Assignable SW Polarity          |+/-                         |0~1      |^(Bit6) |
+| 11|Assignable Pedal Polarity       |+/-                         |0~1      |^(Bit5) |
+| 12|Volume Pedal Polarity           |+/-                         |0~1      |^(Bit4) |
+| 13|Program Auto Arpeggio Setting |OFF/ON                        |0~1      |^(Bit3) |
+| 14|Multi Auto Arpeggio Setting     |OFF/ON                      |0~1      |^(Bit2) |
+| 15|Master Effect                   |AVAIL/BYPASS                |0~1      |^(Bit1) |
+| 16|Digital I/F Clock Source        |INTERNAL/EXTERNAL           |0~1      |^(Bit0) |
+| 17|Memory Protect                  |OFF/ON                      |0~1      |1(Bit0) |
+| 18|Page Memory                     |OFF/ON                      |0~1      |^(Bit1) |
+| 19|Card Area Select                |0~15                        |0~15     |^(Bit4~7)|
++----+-------------------------------+----------------------------+---------+---------+
+| 20~|User Group1 Name               |                            |127~32   |16       |
+| 36~|User Group2 Name               |                            |127~32   |16       |
+| 50~|User Group3 Name               |                            |127~32   |16       |
+| 68~|User Group4 Name               |                            |127~32   |16       |
+| 84~|User Group5 Name               |                            |127~32   |16       |
+|100~|User Group6 Name               |                            |127~32   |16       |
+|116~|User Group7 Name               |                            |127~32   |16       |
+|132~|User Group8 Name               |                            |127~32   |16       |
+|148~|User Group9 Name               |                            |127~32   |16       |
+|164~|User Group10 Name              |                            |127~32   |16       |
+|180~|User Group11 Name              |                            |127~32   |16       |
+|196~|User Group12 Name              |                            |127~32   |16       |
+|212~|User Group13 Name              |                            |127~32   |16       |
+|228~|User Group14 Name              |                            |127~32   |16       |
+|244~|User Group15 Name              |                            |127~32   |16       |
+|260~|User Group16 Name              |                            |127~32   |16       |
++----+-------------------------------+----------------------------+---------+---------+
+|276~|User Scale1                    |-100~+100cent               |-100~+100|12       |
+|288~|User Scale2                    |-100~+100cent               |-100~+100|128      |
++----+-------------------------------+----------------------------+---------+---------+
+| 416|Volume Pedal Function          |Volume/Xpress               |0~1      |1        |
+|    |reserved                       |                            |         |10       |
++====+===============================+============================+=========+=========+
+|    |                               |                            |Total    |      416|
++====+===============================+============================+=========+=========+
+
+           KORG Z1 - MIDI Parameters
++----+-------------------------------+----------------------------+---------+---------+
+| 417|Global MIDI Channel            |1~16                        |0~15     |1(Bit0~3)|
+| 418|Local Control                  |OFF/ON                      |0~1      |^(Bit4) |
+| 419|Omni Mode                      |OFF/ON                      |0~1      |^(Bit5) |
+| 420|Clock Source                   |INT/EXT                     |0~1      |^(Bit6) |
+| 421|Realtime Command Receive       |DIS/ENA                     |0~1      |^(Bit7) |
+| 422|System Exclusive Transmit      |OFF/ON                      |0~1      |1(Bit0~3)|
+| 423|System Exclusive Receive       |DIS/ENA                     |0~1      |^(Bit4~7)|
+| 424|Program Change Transmit        |OFF/ON                      |0~1      |1(Bit0~3)|
+| 425|Program Change Receive         |DIS/ENA/PRG                 |0~2      |^(Bit4~7)|
++----+-------------------------------+----------------------------+---------+---------+
+|    |(Program Bank Select Map)      |                            |         |         |
+| 426|Internal Bank A (MSB)          |OFF/0~127                   |-1~127   |1        |
+| 427|Internal Bank A (LSB)          |OFF/0~127                   |-1~127   |1        |
+| 428|Internal Bank B (MSB)          |OFF/0~127                   |-1~127   |1        |
+| 429|Internal Bank B (LSB)          |OFF/0~127                   |-1~127   |1        |
+| 430|Card Bank A (MSB)              |OFF/0~127                   |-1~127   |1        |
+| 431|Card Bank A (LSB)              |OFF/0~127                   |-1~127   |1        |
+| 432|Card Bank B (MSB)              |OFF/0~127                   |-1~127   |1        |
+| 433|Card Bank B (LSB)              |OFF/0~127                   |-1~127   |1        |
++----+-------------------------------+----------------------------+---------+---------+
+|    |(Multi Set Bank Select Map)    |                            |         |         |
+| 434|Internal Bank A (MSB)          |OFF/0~127                   |-1~127   |1        |
+| 435|Internal Bank A (LSB)          |OFF/0~127                   |-1~127   |1        |
+| 436|Internal Bank B (MSB)          |OFF/0~127                   |-1~127   |1        |
+| 437|Internal Bank B (LSB)          |OFF/0~127                   |-1~127   |1        |
+| 438|Card Bank A (MSB)              |OFF/0~127                   |-1~127   |1        |
+| 439|Card Bank A (LSB)              |OFF/0~127                   |-1~127   |1        |
+| 440|Card Bank B (MSB)              |OFF/0~127                   |-1~127   |1        |
+| 441|Card Bank B (LSB)              |OFF/0~127                   |-1~127   |1        |
++----+-------------------------------+----------------------------+---------+---------+
+|    |(Program Select Map)           |                            |         |         |
+| 442|A001                           |0~127                       |0~127    |1        |
+|    | :                             |                            |         |126      |
+| 569|A128                           |0~127                       |0~127    |1        |
+| 570|B001                           |0~127                       |0~127    |1        |
+|    | :                             |                            |         |126      |
+| 697|B128                           |0~127                       |0~127    |1        |
++----+-------------------------------+----------------------------+---------+---------+
+|    |(Multi Set Select Map)         |                            |         |         |
+| 698|A01                            |0~127                       |0~127    |1        |
+|    | :                             |                            |         |14       |
+| 713|A16                            |0~127                       |0~127    |1        |
+| 714|B01                            |0~127                       |0~127    |1        |
+|    | :                             |                            |         |14       |
+| 729|B16                            |0~127                       |0~127    |1        |
++----+-------------------------------+----------------------------+---------+---------+
+|    |(Pitch Bend Operation)         |                            |         |         |
+| 730|Pitch Bend Transmit            |OFF/ON                      |0/1      |1(Bit0) |
+| 731|Pitch Bend Receive             |DIS/ENA                     |0/1      |^(Bit4) |
+| 732|Pitch Bend Translation         |[*1]                        |0~97     |1        |
++----+-------------------------------+----------------------------+---------+---------+
+|    |(After Touch Operation)        |                            |         |         |
+| 733|After Touch Transmit           |OFF/ON                      |0/1      |1(Bit0) |
+| 734|After Touch Receive            |DIS/ENA                     |0/1      |^(Bit4) |
+| 735|After Touch Translation        |[*1]                        |0~97     |1        |
++----+-------------------------------+----------------------------+---------+---------+
+|    |(CC#01:Mod.Whl Operation)      |                            |         |         |
+| 736|Transmit                       |OFF/ON                      |0/1      |1(Bit0) |
+| 737|Receive                        |DIS/ENA                     |0/1      |^(Bit4) |
+| 738|Translation                    |[*1]                        |0~97     |1        |
++----+-------------------------------+----------------------------+---------+---------+
+|739~|(CC#02:MIDI BC Operation)      |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|742~|(CC#04:FootPdl Operation)      |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|745~|(CC#05:PrtmTim Operation)      |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|748~|(CC#07:MIDI Vol Operation)     |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|751~|(CC#10:MIDI Pan Operation)     |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|754~|(CC#11:MIDI Exp Operation)     |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|757~|(CC#16:Pad X Operation)        |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|760~|(CC#17:Pad Y Operation)        |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|763~|(CC#19:Knob1 Operation)        |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|766~|(CC#20:Knob2 Operation)        |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|769~|(CC#21:Knob3 Operation)        |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|772~|(CC#22:Knob4 Operation)        |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|775~|(CC#23:Knob5 Operation)        |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|778~|(CC#64:Damper Operation)       |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|781~|(CC#65:PrtmSW Operation)       |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|784~|(CC#66:Sostnut Operation)      |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|787~|(CC#80:Mod.SW1 Operation)      |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|790~|(CC#81:Mod.SW2 Operation)      |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|793~|(CC#82:FootSW Operation)       |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|796~|(CC#09:Arp.Res Operation)      |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|799~|(CC#14:Arp.Gat Operation)      |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|802~|(CC#15:Arp.Vel Operation)      |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|805~|(CC#85:F1Fc Operation)         |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|808~|(CC#86:F1Reso Operation)       |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|811~|(CC#87:F1EGInt Operation)      |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|814~|(CC#24:Fc1Atk Operation)       |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|817~|(CC#25:Fc1Dcy Operation)       |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|820~|(CC#26:Fc1Sus Operation)       |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|823~|(CC#27:Fc1Rls Operation)       |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|826~|(CC#88:F2Fc Operation)         |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|829~|(CC#89:F2Reso Operation)       |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|832~|(CC#90:F2EGInt Operation)      |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|835~|(CC#28:Fc2Atk Operation)       |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|838~|(CC#29:Fc2Dcy Operation)       |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|841~|(CC#30:Fc2Sus Operation)       |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|844~|(CC#31:Fc2Rls Operation)       |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|847~|(CC#76:AmpAtk Operation)       |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|850~|(CC#77:AmpDcy Operation)       |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|853~|(CC#78:AmpSus Operation)       |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|856~|(CC#79:AmpRls Operation)       |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|859~|(CC#83:MxOutSW Operation)      |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|862~|(CC#92:M.Fx SW Operation)      |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|865~|(CC#94:Fx1 SW Operation)       |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|868~|(CC#95:Fx2 SW Operation)       |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|871~|(CC#91:FxSend Operation)       |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|874~|(CC#18:Mono SW Operation)      |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|877~|(CC#75:Uison SW Operation)     |                            |         |2        |
++----+-------------------------------+----------------------------+---------+---------+
+|    |reserved                       |                            |         |9        |
++====+===============================+============================+=========+=========+
+|    |                               |                            |Total    |      416|
++====+===============================+============================+=========+=========+
+
+[*1]:PitchBend/AfterTouch/CC#00~CC#95
+
+           KORG Z1 - Multi Set Parameters                     Revision 1.0 (1997.9.12)
++====+===============================+============================+=========+=========+
+| ID |      Parameter Name           |        Display             | Value | Size      |
++====+===============================+============================+=========+=========+
+|    |[Common]                       |                            |         |         |
+|1~16|Multi Set Name                 |                            |20H~7Fh |16        |
++----+-------------------------------+----------------------------+---------+---------+
+|    |[Timbre 1]                     |                            |         |         |
+|    |(Timbre)                       |                            |         |         |
+| 17|Program Bank                    |A/B                         |0~1      |1(Bit7) |
+| 18|Program Number                  |001~128                     |0~127    |^(Bit0~6)|
+| 19|Reserve Voice                   |OFF/1~12(18)                |0~12(18) |1        |
+|    |(Pitch)                        |                            |         |         |
+| 20|Transpose                       |-24~+24                     |-24~+24 |1         |
+| 21|Detune                          |-50~+50cent                 |-50~+50 |1         |
+| 22|Scale Select                    |CMN/PRG                     |0~1      |1(Bit4~7)|
+| 23|Arpeggiator                     |DIS/ENA                     |0~1      |^(Bit0~3)|
+|    |(Mixer)                        |                            |         |         |
+| 24|Output Level                    |0~127/PROG                  |0~128    |1        |
+| 25|Panpot                          |0~127/PROG                  |0~128    |1        |
+| 26|Effect Send                     |0~100/PROG                  |0~101    |1        |
+|    |(Zone)                         |                            |         |         |
+| 27|Key Zone Top                    |C-1~G9                      |0~127    |1        |
+| 28|Key Zone Bottom                 |C-1~G9                      |0~127    |1        |
+| 29|Velocity Zone Top               |1~127                       |1~127    |1        |
+| 30|Velocity Zone Bottom            |1~127                       |1~127    |1        |
+|    |(MIDI)                         |                            |         |         |
+| 31|MIDI Channel                    |1~16/GLB                    |0~15/16 |1(Bit0~4)|
+| 32|Program Change                  |DIS/ENA                     |0~1      |^(Bit7) |
+| 33|Pitch Bend                      |DIS/CMN/PRG                 |0~2      |1(Bit6~7)|
+| 34|After Touch                     |DIS/ENA                     |0~1      |^(Bit5) |
+| 35|Modulation Wheel                |DIS/ENA                     |0~1      |^(Bit4) |
+| 36|X-Y Pad Controller              |DIS/ENA                     |0~1      |^(Bit3) |
+| 37|Damper                          |DIS/ENA                     |0~1      |^(Bit2) |
+| 38|Portamento SW                   |DIS/ENA                     |0~1      |^(Bit1) |
+| 39|Realtime Edit                   |DIS/ENA                     |0~1      |^(Bit0) |
+| 40|Performance Edit                |DIS/ENA                     |0~1      |1(Bit7) |
+| 41|Others                          |DIS/ENA                     |0~1      |^(Bit6) |
+| 42|reserved                        |                            |         |^(Bit5) |
+| 43|reserved                        |                            |         |1        |
++----+-------------------------------+----------------------------+---------+---------+
+| 44~|[Timbre 2]                     |                            |         |16       |
++----+-------------------------------+----------------------------+---------+---------+
+| 71~|[Timbre 3]                     |                            |         |16       |
++----+-------------------------------+----------------------------+---------+---------+
+| 98~|[Timbre 4]                     |                            |         |16       |
++----+-------------------------------+----------------------------+---------+---------+
+|125~|[Timbre 5]                     |                            |         |16       |
++----+-------------------------------+----------------------------+---------+---------+
+|152~|[Timbre 6]                     |                            |         |16       |
++----+-------------------------------+----------------------------+---------+---------+
+|    |[Effect]                       |                            |         |         |
+|    |(Effect 1)                     |                            |         |         |
+| 179|Effect1 Select                 |OD~R.SPEAKER            [*1]|0~14     |1        |
+|    |Effect1 Setting                |                            |         |22       |
+|    |(Effect 2)                     |                            |         |         |
+| 180|Effect2 Select                 |OD~DELAY                [*1]|0~10     |1        |
+|    |Effect2 Setting                |                            |         |22       |
+|    |(Master Effect)                |                            |         |         |
+| 181|Master Effect Select           |St.DELAY~REVERB-Room    [*2]|0~2      |1        |
+|    |Master Effect Setting          |                            |         |18       |
+| 182|Master Low EQ Freq             |0~49                        |0~49     |1        |
+| 183|Master Low EQ Gain             |-18.0~+18.0dB               |-36~+36 |1         |
+| 184|Master High EQ Freq            |0~49                        |0~49     |1        |
+| 185|Master High EQ Gain            |-18.0~+18.0dB               |-36~+36 |1         |
++----+-------------------------------+----------------------------+---------+---------+
+|    |[Common]                       |                            |         |         |
+| 186|Pitch Bender Intensity(+)      |-60~24                      |-60~+24 |1         |
+| 187|Pitch Bender Intensity(-)      |-60~24                      |-60~+24 |1         |
+| 188|Pitch Bender Step(+)           |0,/8,/4,/2,1~12             |0~15     |1(Bit0~3)|
+| 189|Pitch Bender Step(-)           |0,/8,/4,/2,1~12             |0~15     |^(Bit4~7)|
+| 190|Scale Key                      |C~B                         |0~11     |1(Bit0~3)|
+| 191|Scale Type                     |0~10                        |0~10     |^(Bit4~7)|
+| 192|Portamento SW                  |OFF/ON                      |0/1      |1(Bit0) |
+| 193|Unison SW                      |OFF/ON                      |0/1      |^(Bit1) |
+|    |reserved                       |                            |         |10       |
++----+-------------------------------+----------------------------+---------+---------+
+|    |[Controller]                   |                            |         |         |
+| 194|SW1 Function                   |MOD.SW1/MasterFX SW/~   [*3]|0~7      |1(Bit0~3)|
+| 195|SW1 Mode                       |LATCH/UNLATCH               |0/1      |^(Bit4) |
+| 196|SW2 Function                   |MOD.SW1/MasterFX SW/~   [*4]|0~7      |1(Bit0~3)|
+| 197|SW2 Mode                       |LATCH/UNLATCH               |0/1      |^(Bit4) |
+| 198|Assignable Foot SW Function    |FT.SW/MIDI Damper/~     [*5]|0~12     |1(Bit0~3)|
+| 199|Assignable Foot SW Mode        |LATCH/UNLATCH               |0/1      |^(Bit4) |
+| 200|Assignable Pedal Function      |FT.Pedal/MIDI BC/~      [*6]|0~5      |1(Bit0~2)|
+| 201|Pad Hold                       |OFF/ON                      |0/1      |^(Bit3) |
++----+-------------------------------+----------------------------+---------+---------+
+|    |[Link Arpeggio]                |                            |         ||        |
+| 202|Pattern                        |UP~U-35                     |0~19     |1        |
+| 203|Latch                          |OFF/ON                      |0/1      |1(Bit0) |
+| 204|Key Sync                       |OFF/ON                      |0/1      |^(Bit1) |
+| 205|Octaves                        |1~4                         |0~3      |^(Bit2~3)|
+| 206|Keyboard OFF/ON                |OFF/ON                      |0/1      |^(Bit4) |
+| 207|Auto Running                   |OFF/ON                      |0/1      |^(Bit5) |
+| 208|Velocity                       |-127~+127                   |-127~+127|1        |
+| 209|Gate                           |-127~+127                   |-127~+127|1        |
+| 210|Resolution                     |16T/16/8T/8/4T/4            |0~5      |1        |
+| 211|Speed                          |30~285                      |0~255    |1        |
+|    |reserved                       |                            |         |2        |
++====+===============================+============================+=========+=========+
+|    |                               |                            |Total    |      208|
++====+===============================+============================+=========+=========+
+
+
+[*1]:Effect1&2 Type                    [*2]:Master Effect Type
++--+-------------------------------+   +--+-------------------------------+
+|ID|            Name               |   |ID|            Name               |
++--+-------------------------------+   +--+-------------------------------+
+| 0|Overdrive                      |   | 0|Stereo Delay                   |
+| 1|Compressor                     |   | 1|Reverb-Hall                    |
+| 2|Parametric EQ                  |   | 2|Reverb-Room                    |
+| 3|Wah                            |   +--+-------------------------------+
+| 4|Exciter                        |
+| 5|Decimator                      |
+| 6|Chorus                         |
+| 7|Flanger                        |
+| 8|Phaser                         |
+| 9|Rotary Speaker-small           |
+|10|Delay-mono                     |
+|11|Talking Modulator    (FX1 only)|
+|12|Multitap Delay       (FX1 only)|
+|13|Ensemble             (FX1 only)|
+|14|Rotary Speaker-Large (FX1 only)|
++--+-------------------------------+
+
+[*3]:Assignable SW1 Function List       [*4]Assignable SW2 Function List
++----------------------------------+    +----------------------------------+
+|Mod.SW1(CC#80)                    |    |Mod.SW2(CC#81)                    |
+|Master FX OFF/ON(CC#91)           |    |Master FX OFF/ON(CC#91)           |
+|FX1 OFF/ON(CC#92)                 |    |FX1 OFF/ON(CC#92)                 |
+|FX2 OFF/ON(CC#93)                 |    |FX2 OFF/ON(CC#93)                 |
+|Octave Up                         |    |Octave Up                         |
+|Octave Down                       |    |Octave Down                       |
+|Mono SW(CC#18)                    |    |Mono SW(CC#18)                    |
+|Unison OFF/ON(CC#75)              |    |Unison OFF/ON(CC#75)              |
++----------------------------------+    +----------------------------------+
+
+[*5]:Assignable Foot SW Function List   [*6]:Assignable Pedal Function List
++----------------------------------+    +----------------------------------+
+|Foot SW(CC#82)                    |    |Foot Pedal(CC#4)                  |
+|MIDI Damper(CC#64)                |    |MIDI Breath Control(CC#2)         |
+|MIDI Portamento SW(CC#65)         |    |MIDI Portamento Time(CC#5)        |
+|MIDI Sostenuto(CC#66)             |    |MIDI Volume(CC#7)                 |
+|Master FX OFF/ON(CC#92)           |    |MIDI Panpot(CC#10)                |
+|FX1 OFF/ON(CC#94)                 |    |MIDI Expression(CC#11)            |
+|FX2 OFF/ON(CC#95)                 |    +----------------------------------+
+|Octave Up                         |
+|Octave Down                       |
+|Mono SW(CC#18)                    |
+|Unison OFF/ON(CC#75)              |
+|Arpeggio OFF/ON                   |
+|Pad Hold                          |
++----------------------------------+
+
+          KORG Z1 - Arpeggio Pattern Parameters               Revision 1.0 (1997.9.12)
++====+===============================+============================+=========+=========+
+| ID |      Parameter Name           |         Display            | Value | Size      |
++====+===============================+============================+=========+=========+
+|1~16|Pattern Name                   |                            |20H~7FH |16        |
+| 17|reserved                        |                            |5(User) |1         |
+| 18|reserved                        |                            |         |1        |
+| 19|Sort                            |OFF/ON                      |0/1      |1        |
+| 20|Keyboard Scan Zone Top          |C-1~G9                      |0~127    |1        |
+| 21|Keyboard Scan Zone Bottom       |C-1~G9                      |0~127    |1        |
+| 22|Velocity                        |1~127/KEY/STEP              |1~129    |1        |
+| 23|reserved                        |                            |         |1        |
+| 24|reserved                        |                            |         |1        |
+| 25|Gate                            |0%~100%/STEP                |0~101    |1        |
+| 26|reserved                        |                            |         |1        |
+| 27|reserved                        |                            |         |1        |
+| 28|Swing                           |-50~+50%                    |-50~+50 |1         |
+| 29|reserved                        |                            |         |1        |
+| 30|Pattern Length(user pat. only) |1~36                         |1~36     |1        |
+| 31|Arpeggio Type                   |Type1~Type4             [*1]|0~3      |1        |
+| 32|Octave Motion(user pat. only) |UP/DOWN/BOTH/PARALLEL         |0~3      |1        |
+|    |reserved                       |                            |         |8        |
++----+-------------------------------+----------------------------+---------+---------+
+|    |(Step1)                        |                            |         |         |
+| 33|Tone MSB                        |                        [*2]|00H~03H |1         |
+| 34|Tone LSB                        |                        [*2]|00H~FFH |1         |
+| 35|Pitch Offset                    |-48~+48                     |-48~+48 |1         |
+| 36|Flam                            |-99~+99                     |-99~+99 |1         |
+| 37|Velocity                        |1~127/KEY                   |1~128    |1        |
+| 38|Gate                            |OFF/1%~100%/LEGART          |0~101    |1        |
++----+-------------------------------+----------------------------+---------+---------+
+| 39~|(Step2)                        |                            |         |6        |
++----+-------------------------------+----------------------------+---------+---------+
+| : |    :                           |                            |         |:        |
++----+-------------------------------+----------------------------+---------+---------+
+|243~|(Step36)                       |                            |         |6        |
++====+===============================+============================+=========+=========+
+|    |                               |                            |Total    |      256|
++====+===============================+============================+=========+=========+
+
+[*1]:Arpeggio Type
+     Type1:As Played
+     Type2:As Played(Fill)
+     Type3:Running Up
+     Type4:Up & Down
+
+[*2]:Tone
+                           Tone9, 8 , 7 , 6 , 5 , 4 , 3 , 2 , 1 , 0
+    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+    | 0 | 0 | 0 | 0 | 0 | 0 |0/1|0/1|0/1|0/1|0/1|0/1|0/1|0/1|0/1|0/1|
+    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+    <============= MSB ============>:<============ LSB =============>
+
