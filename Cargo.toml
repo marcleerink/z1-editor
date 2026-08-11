@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = []
+members = ["z1-protocol"]
 
 # Strict lints, per https://www.namtao.com/rust/ — deny panics at compile
 # time (a panic unwinding out of a plugin crashes the host DAW). Test code
