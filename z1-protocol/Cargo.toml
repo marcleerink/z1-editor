@@ -1,0 +1,11 @@
+[package]
+name = "z1-protocol"
+version = "0.1.0"
+edition = "2021"
+description = "Korg Z1 MIDI SysEx protocol: message codec and 7-in-8 packing"
+license = "MIT"
+
+[lints]
+workspace = true
+
+[dependencies]
